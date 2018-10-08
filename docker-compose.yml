@@ -1,0 +1,16 @@
+version: '3.5'
+
+services:
+  import:
+    image: jazzdd/alpine-flask
+    command: -d
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    networks:
+      - proxynet
+
+networks:
+  proxynet:
+    name: GamesBI-network
