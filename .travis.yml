@@ -13,3 +13,10 @@ script:
   - docker-compose up -d
   - sleep 10
 
+deploy:
+  - provider: heroku
+  - api_key:
+      secure: ${HEROKU_KEY}
+    app:
+      master: gbi-importadores-production
+      develop: gbi-importadores-staging
