@@ -15,8 +15,17 @@ script:
 
 deploy:
   - provider: heroku
-  - api_key:
+    api_key:
       secure: ${HEROKU_KEY}
-    app:
-      master: gbi-importadores-production
-      develop: gbi-importadores-staging
+    app: gbi-importadores-staging
+    on:
+      repo: fga-eps-mds/2018.2-GamesBI_Importadores
+      branch: develop
+
+  - provider: heroku
+    api_key:
+      secure: ${HEROKU_KEY}
+    app: gbi-importadores-production
+    on:
+      repo: fga-eps-mds/2018.2-GamesBI_Importadores
+      branch: master
