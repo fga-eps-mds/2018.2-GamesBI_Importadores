@@ -2,6 +2,8 @@ from flask import Blueprint, Flask
 from flask_restful import Api
 from resources.Steam import Steam
 
+import os
+
 api_bp = Blueprint('api', __name__)
 api = Api(api_bp)
 
@@ -20,4 +22,4 @@ def create_app(config_filename):
 
 if __name__ == "__main__":
     app = create_app(__name__)
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0',port=int(os.environ['PORT']), debug=True)
