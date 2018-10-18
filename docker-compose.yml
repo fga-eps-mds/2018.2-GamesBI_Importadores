@@ -1,0 +1,17 @@
+version: '3.5'
+
+services:
+  import:
+    build: .
+    volumes:
+      - ./webapp:/opt/webapp
+    ports:
+      - "5000:5000"
+    networks:
+      - proxynet
+    environment:
+      - PORT=5000
+
+networks:
+  proxynet:
+    name: GamesBI-network
