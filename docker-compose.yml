@@ -2,14 +2,15 @@ version: '3.5'
 
 services:
   import:
-    image: jazzdd/alpine-flask
-    command: -d
+    build: .
     volumes:
-      - .:/app
+      - ./webapp:/opt/webapp
     ports:
       - "5000:5000"
     networks:
       - proxynet
+    environment:
+      - PORT=5000
 
 networks:
   proxynet:
