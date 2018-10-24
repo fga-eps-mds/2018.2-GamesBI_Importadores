@@ -14,7 +14,7 @@ class Steam(Resource):
         for gameSteam in arraySteamData:
             gameYoutube = self.getYoutubeData(gameSteam['name'])
             # gameTwich = self.getTwitchData(gameSteam)
-            dictionaryGame = self.mergeData(gameSteam, gameYoutube, gameTwich)
+            # dictionaryGame = self.mergeData(gameSteam, gameYoutube, gameTwich)
             arrayPOST.append(dictionaryGame)
 
         # Ao final do for, criar requisição POST e enviar arrayPOST para o crossData
@@ -38,8 +38,13 @@ class Steam(Resource):
         selectGames = []
         for game in gamesData.values():
             if self.validGame(game):
+                additionalInformation = {
+                    'genre': None,
+                    'languages': None
+                }
                 if 'appid' in game:
                     id = game['appid']
+                    additionalInformation = self.getInfosGameSteam(id)
                 else:
                     id = None
                 if 'name' in game:
@@ -79,10 +84,37 @@ class Steam(Resource):
                     'owners': owners,
                     'average_forever': average_forever,
                     'average_2weeks': average_2weeks,
-                    'price': price
+                    'price': price,
+                    'languages': additionalInformation['languages'],
+                    'genre': additionalInformation['genre']
                 }
                 selectGames.append(filtered_data)
         return selectGames
+
+    # Requisita jogo individualmente e retorna um dicionario com languages e genre referentes a um jogo
+    def getInfosGameSteam(self, idGame):
+        url = 'http://steamspy.com/api.php?request=appdetails&appid={}'.format(idGame)
+        header = {'Accept': 'application/json'}
+        request = requests.get(url, headers=header)
+        data = request.json()
+        return self.filterInfosGameSteam(data)
+
+    # Filtra dados de um jogo e retorna um dicionario com languages e genre
+    def filterInfosGameSteam(self, gameData):
+        if 'languages' in gameData:
+            languages = gameData['languages']
+        else:
+            languages = None
+
+        if 'genre' in gameData:
+            genre = gameData['genre'].split(", ")[0]
+        else:
+            genre = None
+        return {
+            'genre': genre,
+            'languages': languages
+        }
+
 
     # Valida se aquele jogo tem uma quantidade mínima de owners
     def validGame(self, game):
@@ -241,8 +273,8 @@ class Steam(Resource):
               'average_forever': steamGame['average_forever'],
               'average_2weeks': steamGame['average_2weeks'],
               'price': steamGame['price'],
-              # 'languages': "",
-              # 'genre': "",
+              'languages': steamGame['languages'],
+              'genre': steamGame['genre'],
             # Dados Youtube
               'count_videos': youtubeGame['count_videos'],
               'count_views': youtubeGame['count_views'],
