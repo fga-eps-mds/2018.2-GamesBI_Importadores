@@ -2,11 +2,15 @@ from flask_restful import Resource
 # from flask import jsonify
 import requests
 import operator
+import os
 from functools import reduce
 from pprint import pprint
 from urllib.parse import quote
 
 TWITCH_HEADER = {'Client-ID': 'nhnlqt9mgdmkf9ls184tt1nd753472', 'Accept': 'application/json'}
+YOUTUBE_VIDEOS_LIMIT = int(os.environ['YOUTUBE_VIDEOS_LIMIT'])
+STEAM_OWNERS_MIN = int(os.environ['STEAM_OWNERS_MIN'])
+STEAM_GAMES_LIMIT = int(os.environ['STEAM_GAMES_LIMIT'])
 
 class Steam(Resource):
 
@@ -40,8 +44,15 @@ class Steam(Resource):
     # Filtra os dados da steam e retorna um array com jogos selecionados
     def filterSteamGames(self, gamesData):
         selectGames = []
+        
+        count = 0
+
         for game in gamesData.values():
             if self.validGame(game):
+                if count >= STEAM_GAMES_LIMIT:
+                    break
+
+                count += 1
                 additionalInformation = {
                     'genre': None,
                     'languages': None
@@ -95,7 +106,7 @@ class Steam(Resource):
                 selectGames.append(filtered_data)
 
         # Pegando somente 10 por vez para os testes
-        return selectGames[:10]
+        return selectGames
 
     # Requisita jogo individualmente e retorna um dicionario com languages e genre referentes a um jogo
     def getInfosGameSteam(self, idGame):
@@ -127,7 +138,7 @@ class Steam(Resource):
         if 'owners' in game:
             owners_str = game['owners']
             owners = self.readOwners(owners_str)
-            if owners > 10000000:
+            if owners > STEAM_OWNERS_MIN:
                 return True
             else:
                 return False
@@ -200,7 +211,11 @@ class Steam(Resource):
     def getIDsYoutubeGame(self, gameName):
         header={'Accept':'application/json'}
         key='AIzaSyDmDXP_gaB7cog4f0slbbdJ3RACsY5WQIw'
-        url='https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&q={}GAMEPLAY&key={}'.format(gameName, key)
+        url= 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults={}&q={}GAMEPLAY&key={}'.format(
+            YOUTUBE_VIDEOS_LIMIT,
+            gameName, 
+            key,
+        )
         request = requests.get(url, headers=header)
         data = request.json()
         return self.filterIDsYoutubeGame(data)
