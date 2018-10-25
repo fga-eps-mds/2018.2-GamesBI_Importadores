@@ -27,7 +27,9 @@ class Steam(Resource):
 
         # Ao final do for, criar requisição POST e enviar arrayPOST para o crossData
 
-        return arrayPOST
+        req = requests.post("http://web:8000/import_data/api/", json=arrayPOST)
+
+        return req.json()
 
 
 # >>>>>>>>>>>>>>>>>> STEAM SECTION <<<<<<<<<<<<<<<<<<<<<<
@@ -119,7 +121,7 @@ class Steam(Resource):
     # Filtra dados de um jogo e retorna um dicionario com languages e genre
     def filterInfosGameSteam(self, gameData):
         if 'languages' in gameData:
-            languages = gameData['languages']
+            languages = gameData['languages'].split(',')[0]
         else:
             languages = None
 
@@ -331,7 +333,7 @@ class Steam(Resource):
             keys = ['language', 'game_id', 'started_at', 'type', 'viewer_count']
             filtered_data.append({ key: data[key] if key in data else None for key in keys })
 
-        return filtered_data
+        return filtered_data[:2]
 
 # >>>>>>>>>>>>>>>>>> MERGE SECTION <<<<<<<<<<<<<<<<<<<<<<
 
