@@ -1,8 +1,12 @@
 from flask_restful import Resource
 # from flask import jsonify
 import requests
-# from pprint import pprint
+import operator
+from functools import reduce
+from pprint import pprint
+from urllib.parse import quote
 
+TWITCH_HEADER = {'Client-ID': 'nhnlqt9mgdmkf9ls184tt1nd753472', 'Accept': 'application/json'}
 
 class Steam(Resource):
 
@@ -13,13 +17,13 @@ class Steam(Resource):
         arraySteamData = self.getSteamData()
         for gameSteam in arraySteamData:
             gameYoutube = self.getYoutubeData(gameSteam['name'])
-            # gameTwich = self.getTwitchData(gameSteam)
-            # dictionaryGame = self.mergeData(gameSteam, gameYoutube, gameTwich)
+            gameTwitch =  self.get_twitch_data(gameSteam['name'])
+            dictionaryGame = self.mergeData(gameSteam, gameYoutube, gameTwitch)
             arrayPOST.append(dictionaryGame)
 
         # Ao final do for, criar requisição POST e enviar arrayPOST para o crossData
 
-        return "OK"
+        return arrayPOST
 
 
 # >>>>>>>>>>>>>>>>>> STEAM SECTION <<<<<<<<<<<<<<<<<<<<<<
@@ -89,7 +93,9 @@ class Steam(Resource):
                     'genre': additionalInformation['genre']
                 }
                 selectGames.append(filtered_data)
-        return selectGames
+
+        # Pegando somente 10 por vez para os testes
+        return selectGames[:10]
 
     # Requisita jogo individualmente e retorna um dicionario com languages e genre referentes a um jogo
     def getInfosGameSteam(self, idGame):
@@ -121,7 +127,7 @@ class Steam(Resource):
         if 'owners' in game:
             owners_str = game['owners']
             owners = self.readOwners(owners_str)
-            if owners > 45000:
+            if owners > 10000000:
                 return True
             else:
                 return False
@@ -261,27 +267,78 @@ class Steam(Resource):
         }
         return filtered_data_video
 
+# >>>>>>>>>>>>>>>>>> YOUTUBE SECTION <<<<<<<<<<<<<<<<<<<<<<
+
+    def get_twitch_data(self, game_name):
+        url = 'https://api.twitch.tv/helix/games?name={}'.format(quote(game_name))
+
+        game_data = requests.get(url, headers=TWITCH_HEADER)
+        print(game_name)
+
+        ndata = game_data.json()
+        print(ndata)
+
+        return self.filter_game_data(ndata['data'][0])
+
+    def filter_game_data(self, ndata):
+        total_views = 0
+
+        game_id = 0;
+        if 'id' in ndata:
+            game_id = ndata['id']
+
+        streams = self.get_streams(game_id)
+        
+        total_views = 0
+        if len(streams) != 0:
+            total_views = reduce(operator.add, [x['viewer_count'] if x['viewer_count'] != None else 0 for x in streams])
+
+        print("Total views {}".format(total_views))
+        
+        return {
+            'total_views': total_views,
+            'streams': streams
+        }
+            
+
+    def get_streams(self, game_id):
+        url =  'https://api.twitch.tv/helix/streams?game_id={}'.format(game_id)
+
+        stream_data = requests.get(url, headers=TWITCH_HEADER)
+        ndata = stream_data.json()
+
+        return self.filter_stream_data(ndata)
+
+    def filter_stream_data(self, ndata):
+        filtered_data = []
+
+        for data in ndata['data']:
+            keys = ['language', 'game_id', 'started_at', 'type', 'viewer_count']
+            filtered_data.append({ key: data[key] if key in data else None for key in keys })
+
+        return filtered_data
+
 # >>>>>>>>>>>>>>>>>> MERGE SECTION <<<<<<<<<<<<<<<<<<<<<<
 
-        def mergeData(self, steamGame, youtubeGame, twichGame):
-            return {
-            # Dados Steam
-              'name': steamGame['game'],
-              'positive_reviews_steam': steamGame['positive_reviews_steam'],
-              'negative_reviews_steam': steamGame['negative_reviews_steam'],
-              'owners': steamGame['owners'],
-              'average_forever': steamGame['average_forever'],
-              'average_2weeks': steamGame['average_2weeks'],
-              'price': steamGame['price'],
-              'languages': steamGame['languages'],
-              'genre': steamGame['genre'],
-            # Dados Youtube
-              'count_videos': youtubeGame['count_videos'],
-              'count_views': youtubeGame['count_views'],
-              'count_likes': youtubeGame['count_likes'],
-              'count_dislikes': youtubeGame['count_dislikes'],
-              'count_comments': youtubeGame['count_comments'],
-            # Dados Twitch
-              'total_views': twichGame['total_views'],
-              'streams': twichGame['streams']
-            }
+    def mergeData(self, steamGame, youtubeGame, twitchGame):
+        return {
+        # Dados Steam
+            'name': steamGame['name'],
+            'positive_reviews_steam': steamGame['positive_reviews_steam'],
+            'negative_reviews_steam': steamGame['negative_reviews_steam'],
+            'owners': steamGame['owners'],
+            'average_forever': steamGame['average_forever'],
+            'average_2weeks': steamGame['average_2weeks'],
+            'price': steamGame['price'],
+            'languages': steamGame['languages'],
+            'genre': steamGame['genre'],
+        # Dados Youtube
+            'count_videos': youtubeGame['count_videos'],
+            'count_views': youtubeGame['count_views'],
+            'count_likes': youtubeGame['count_likes'],
+            'count_dislikes': youtubeGame['count_dislikes'],
+            'count_comments': youtubeGame['count_comments'],
+        # Dados Twitch
+            'total_views': twitchGame['total_views'],
+            'streams': twitchGame['streams']
+        }
