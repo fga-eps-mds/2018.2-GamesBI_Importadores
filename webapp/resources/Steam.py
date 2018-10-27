@@ -16,52 +16,52 @@ class Steam(Resource):
 
     def get(self):
         # Declaracao do array de objetos que será enviado para o crossData
-        arrayPOST = []
+        array_post = []
         # Busca os jogos da steam e retorna um array de jogos selecionados
-        arraySteamData = self.getSteamData()
-        for gameSteam in arraySteamData:
-            gameYoutube = self.getYoutubeData(gameSteam['name'])
-            gameTwitch =  self.get_twitch_data(gameSteam['name'])
-            dictionaryGame = self.mergeData(gameSteam, gameYoutube, gameTwitch)
-            arrayPOST.append(dictionaryGame)
+        array_steam_data = self.get_steam_data()
+        for game_steam in array_steam_data:
+            game_youtube = self.get_youtube_data(game_steam['name'])
+            game_twitch =  self.get_twitch_data(game_steam['name'])
+            dictionary_game = self.merge_data(game_steam, game_youtube, game_twitch)
+            array_post.append(dictionary_game)
 
         # Ao final do for, criar requisição POST e enviar arrayPOST para o crossData
 
-        req = requests.post("http://web:8000/import_data/api/", json=arrayPOST)
+        # req = requests.post("http://web:8000/import_data/api/", json=array_post)
 
-        return req.json()
+        # return req.json()
+        return array_post
 
 
 # >>>>>>>>>>>>>>>>>> STEAM SECTION <<<<<<<<<<<<<<<<<<<<<<
 
 
     # Requisita todos os jogos da steam e retorna um array com jogos selecionados
-    def getSteamData(self):
+    def get_steam_data(self):
         url = 'http://steamspy.com/api.php?request=all'
         header = {'Accept': 'application/json'}
         request = requests.get(url, headers=header)
         data = request.json()
-        return self.filterSteamGames(data)
+        return self.filter_steam_games(data)
 
     # Filtra os dados da steam e retorna um array com jogos selecionados
-    def filterSteamGames(self, gamesData):
-        selectGames = []
-        
+    def filter_steam_games(self, games_data):
+        select_games = []
         count = 0
 
-        for game in gamesData.values():
-            if self.validGame(game):
+        for game in games_data.values():
+            if self.valid_game(game):
                 if count >= STEAM_GAMES_LIMIT:
                     break
 
                 count += 1
-                additionalInformation = {
+                additional_information = {
                     'genre': None,
                     'languages': None
                 }
                 if 'appid' in game:
                     id = game['appid']
-                    additionalInformation = self.getInfosGameSteam(id)
+                    additional_information = self.get_infos_game_steam(id)
                 else:
                     id = None
                 if 'name' in game:
@@ -78,7 +78,7 @@ class Steam(Resource):
                     negative = None
                 if 'owners' in game:
                     owners_str = game['owners']
-                    owners = self.readOwners(owners_str)
+                    owners = self.read_owners(owners_str)
                 else:
                     owners_str = None
                 if 'average_forever' in game:
@@ -102,31 +102,31 @@ class Steam(Resource):
                     'average_forever': average_forever,
                     'average_2weeks': average_2weeks,
                     'price': price,
-                    'languages': additionalInformation['languages'],
-                    'genre': additionalInformation['genre']
+                    'languages': additional_information['languages'],
+                    'genre': additional_information['genre']
                 }
-                selectGames.append(filtered_data)
+                select_games.append(filtered_data)
 
         # Pegando somente 10 por vez para os testes
-        return selectGames
+        return select_games
 
     # Requisita jogo individualmente e retorna um dicionario com languages e genre referentes a um jogo
-    def getInfosGameSteam(self, idGame):
-        url = 'http://steamspy.com/api.php?request=appdetails&appid={}'.format(idGame)
+    def get_infos_game_steam(self, id_game):
+        url = 'http://steamspy.com/api.php?request=appdetails&appid={}'.format(id_game)
         header = {'Accept': 'application/json'}
         request = requests.get(url, headers=header)
         data = request.json()
-        return self.filterInfosGameSteam(data)
+        return self.filter_infos_game_steam(data)
 
     # Filtra dados de um jogo e retorna um dicionario com languages e genre
-    def filterInfosGameSteam(self, gameData):
-        if 'languages' in gameData:
-            languages = gameData['languages'].split(',')[0]
+    def filter_infos_game_steam(self, game_data):
+        if 'languages' in game_data:
+            languages = game_data['languages'].split(',')[0]
         else:
             languages = None
 
-        if 'genre' in gameData:
-            genre = gameData['genre'].split(", ")[0]
+        if 'genre' in game_data:
+            genre = game_data['genre'].split(", ")[0]
         else:
             genre = None
         return {
@@ -136,10 +136,10 @@ class Steam(Resource):
 
 
     # Valida se aquele jogo tem uma quantidade mínima de owners
-    def validGame(self, game):
+    def valid_game(self, game):
         if 'owners' in game:
             owners_str = game['owners']
-            owners = self.readOwners(owners_str)
+            owners = self.read_owners(owners_str)
             if owners > STEAM_OWNERS_MIN:
                 return True
             else:
@@ -148,13 +148,13 @@ class Steam(Resource):
             return False
 
     # Recebe uma string de owners e retorna a média entra elas
-    def readOwners(self, str_owners):
-        vector_numbers = self.validOwners(str_owners)
-        average = self.calculatesAvarege(vector_numbers)
+    def read_owners(self, str_owners):
+        vector_numbers = self.valid_owners(str_owners)
+        average = self.calculates_avarege(vector_numbers)
         return average
 
     # Recebe uma string de owners, as separa em dois inteiros e retorna a media entra elas
-    def validOwners(self, str_owners):
+    def valid_owners(self, str_owners):
         low_average = str_owners.split(" .. ")[0]
         high_average = str_owners.split(" .. ")[1]
         low_average_valid = ""
@@ -172,7 +172,7 @@ class Steam(Resource):
         return [low_average_int, high_average_int]
 
     # Recebe um array de numeros e retorna a media entre eles
-    def calculatesAvarege(self, numbers):
+    def calculates_avarege(self, numbers):
         sum = 0
         for number in numbers:
             sum = sum + number
@@ -182,13 +182,13 @@ class Steam(Resource):
 # >>>>>>>>>>>>>>>>>> YOUTUBE SECTION <<<<<<<<<<<<<<<<<<<<<<
 
 
-    def getYoutubeData(self, gameName):
+    def get_youtube_data(self, game_name):
         # Busca o array de ids de videos no youtube relacionados a cada jogo
-        arrayIDsYoutubeGame = self.getIDsYoutubeGame(gameName)
-        dictionaryGame = {
+        array_ids_youtube_game = self.get_ids_youtube_game(game_name)
+        dictionary_game = {
             # 'id':qtd_jogos,
-            'name': gameName,
-            'count_videos': len(arrayIDsYoutubeGame),
+            'name': game_name,
+            'count_videos': len(array_ids_youtube_game),
             'count_views': 0,
             'count_likes': 0,
             'count_dislikes': 0,
@@ -196,37 +196,37 @@ class Steam(Resource):
             'count_comments': 0
         }
         # Percorre array de ids de videos do youtube
-        for id in arrayIDsYoutubeGame:
-            videoData = self.getVideoYoutubeData(id)
+        for id in array_ids_youtube_game:
+            video_data = self.get_video_youtube_data(id)
             print("Requisitando video com ID: {}".format(id))
             print("------------------------------------------")
-            dictionaryGame['count_views'] = dictionaryGame['count_views'] + videoData['count_views']
-            dictionaryGame['count_likes'] = dictionaryGame['count_likes'] + videoData['count_likes']
-            dictionaryGame['count_dislikes'] = dictionaryGame['count_dislikes'] + videoData['count_dislikes']
-            dictionaryGame['count_favorites'] = dictionaryGame['count_favorites'] + videoData['count_favorites']
-            dictionaryGame['count_comments'] = dictionaryGame['count_comments'] + videoData['count_comments']
+            dictionary_game['count_views'] = dictionary_game['count_views'] + video_data['count_views']
+            dictionary_game['count_likes'] = dictionary_game['count_likes'] + video_data['count_likes']
+            dictionary_game['count_dislikes'] = dictionary_game['count_dislikes'] + video_data['count_dislikes']
+            dictionary_game['count_favorites'] = dictionary_game['count_favorites'] + video_data['count_favorites']
+            dictionary_game['count_comments'] = dictionary_game['count_comments'] + video_data['count_comments']
 
-        return dictionaryGame
+        return dictionary_game
 
 
     # Requisita um jogo no youtube e retorna um array com todos os ID's de videos relacionados
-    def getIDsYoutubeGame(self, gameName):
+    def get_ids_youtube_game(self, game_name):
         header={'Accept':'application/json'}
         key='AIzaSyDmDXP_gaB7cog4f0slbbdJ3RACsY5WQIw'
         url= 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults={}&q={}GAMEPLAY&key={}'.format(
             YOUTUBE_VIDEOS_LIMIT,
-            gameName, 
+            game_name,
             key,
         )
         request = requests.get(url, headers=header)
         data = request.json()
-        return self.filterIDsYoutubeGame(data)
+        return self.filter_ids_youtube_game(data)
 
     # Retorna um array com todos os ID's de videos relacionados a um jogo
-    def filterIDsYoutubeGame(self, youtubeResults):
+    def filter_ids_youtube_game(self, youtube_results):
         items=[]
-        if 'items' in youtubeResults:
-            items=youtubeResults['items']
+        if 'items' in youtube_results:
+            items=youtube_results['items']
 
         list_id=[]
         for item in items:
@@ -241,16 +241,16 @@ class Steam(Resource):
         return list_id
 
     # Requisita as informações de um video do youtube e retorna um objeto com essas informações
-    def getVideoYoutubeData(self, idvideo):
+    def get_video_youtube_data(self, id_video):
         header = {'Accept': 'application/json'}
         key = 'AIzaSyDmDXP_gaB7cog4f0slbbdJ3RACsY5WQIw'
-        url = 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id={}&key={}'.format(idvideo, key)
+        url = 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id={}&key={}'.format(id_video, key)
         request = requests.get(url, headers=header)
         data = request.json()
-        return self.filterVideoYoutubeGama(data)
+        return self.filter_video_youtube_gama(data)
 
     # Filtra os dados de um video do youtube e retorna um objeto com esses dados
-    def filterVideoYoutubeGama(self, video_data):
+    def filter_video_youtube_gama(self, video_data):
         count_views = 0
         count_likes = 0
         count_dislikes = 0
@@ -284,7 +284,7 @@ class Steam(Resource):
         }
         return filtered_data_video
 
-# >>>>>>>>>>>>>>>>>> YOUTUBE SECTION <<<<<<<<<<<<<<<<<<<<<<
+# >>>>>>>>>>>>>>>>>> TWICH SECTION <<<<<<<<<<<<<<<<<<<<<<
 
     def get_twitch_data(self, game_name):
         url = 'https://api.twitch.tv/helix/games?name={}'.format(quote(game_name))
@@ -305,18 +305,18 @@ class Steam(Resource):
             game_id = ndata['id']
 
         streams = self.get_streams(game_id)
-        
+
         total_views = 0
         if len(streams) != 0:
             total_views = reduce(operator.add, [x['viewer_count'] if x['viewer_count'] != None else 0 for x in streams])
 
         print("Total views {}".format(total_views))
-        
+
         return {
             'total_views': total_views,
             'streams': streams
         }
-            
+
 
     def get_streams(self, game_id):
         url =  'https://api.twitch.tv/helix/streams?game_id={}'.format(game_id)
@@ -337,25 +337,25 @@ class Steam(Resource):
 
 # >>>>>>>>>>>>>>>>>> MERGE SECTION <<<<<<<<<<<<<<<<<<<<<<
 
-    def mergeData(self, steamGame, youtubeGame, twitchGame):
+    def merge_data(self, steam_game, youtube_game, twitch_game):
         return {
         # Dados Steam
-            'name': steamGame['name'],
-            'positive_reviews_steam': steamGame['positive_reviews_steam'],
-            'negative_reviews_steam': steamGame['negative_reviews_steam'],
-            'owners': steamGame['owners'],
-            'average_forever': steamGame['average_forever'],
-            'average_2weeks': steamGame['average_2weeks'],
-            'price': steamGame['price'],
-            'languages': steamGame['languages'],
-            'genre': steamGame['genre'],
+            'name': steam_game['name'],
+            'positive_reviews_steam': steam_game['positive_reviews_steam'],
+            'negative_reviews_steam': steam_game['negative_reviews_steam'],
+            'owners': steam_game['owners'],
+            'average_forever': steam_game['average_forever'],
+            'average_2weeks': steam_game['average_2weeks'],
+            'price': steam_game['price'],
+            'languages': steam_game['languages'],
+            'genre': steam_game['genre'],
         # Dados Youtube
-            'count_videos': youtubeGame['count_videos'],
-            'count_views': youtubeGame['count_views'],
-            'count_likes': youtubeGame['count_likes'],
-            'count_dislikes': youtubeGame['count_dislikes'],
-            'count_comments': youtubeGame['count_comments'],
+            'count_videos': youtube_game['count_videos'],
+            'count_views': youtube_game['count_views'],
+            'count_likes': youtube_game['count_likes'],
+            'count_dislikes': youtube_game['count_dislikes'],
+            'count_comments': youtube_game['count_comments'],
         # Dados Twitch
-            'total_views': twitchGame['total_views'],
-            'streams': twitchGame['streams']
+            'total_views': twitch_game['total_views'],
+            'streams': twitch_game['streams']
         }
