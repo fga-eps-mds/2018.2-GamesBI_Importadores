@@ -9,8 +9,20 @@ services:
       - "5000:5000"
     networks:
       - proxynet
-    environment:
-      - PORT=5000
+    env_file:
+      - .env
+  worker:
+    build:
+      context: celery-queue
+      dockerfile: Dockerfile
+    networks:
+      - proxynet
+    depends_on:
+      - redis
+  redis:
+    image: redis
+    networks:
+      - proxynet
 
 networks:
   proxynet:
