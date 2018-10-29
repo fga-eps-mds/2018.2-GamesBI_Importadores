@@ -4,8 +4,11 @@ import requests
 import operator
 import os
 from functools import reduce
-from pprint import pprint
+# from pprint import pprint
 from urllib.parse import quote
+
+import colorific
+from PIL import Image
 
 TWITCH_HEADER = {'Client-ID': 'nhnlqt9mgdmkf9ls184tt1nd753472', 'Accept': 'application/json'}
 YOUTUBE_VIDEOS_LIMIT = int(os.environ['YOUTUBE_VIDEOS_LIMIT'])
@@ -335,11 +338,39 @@ class Steam(Resource):
 
         return filtered_data[:2]
 
+# >>>>>>>>>>>>>>>>>> PALLETE SECTION <<<<<<<<<<<<<<<<<<<<<<
+
+    def get_pallete(self, img_url):
+        img = Image.open(requests.get(img_url, stream=True).raw)
+        palette = colorific.extract_colors(img)
+        array_colors = []
+        for color in palette.colors:
+            hex_value = colorific.rgb_to_hex(color.value)
+            dictionary_colors = {
+                'r': color.value[0],
+                'g': color.value[1],
+                'b': color.value[2],
+                'hex': hex_value
+            }
+            array_colors.append(dictionary_colors)
+        if palette.bgcolor is not None:
+            hex_value = colorific.rgb_to_hex(palette.bgcolor.value)
+            dictionary_colors = {
+                'r': palette.bgcolor.value[0],
+                'g': palette.bgcolor.value[1],
+                'b': palette.bgcolor.value[2],
+                'hex': hex_value
+            }
+            array_colors.append(dictionary_colors)
+
+        return array_colors
+
+
 # >>>>>>>>>>>>>>>>>> MERGE SECTION <<<<<<<<<<<<<<<<<<<<<<
 
     def merge_data(self, steam_game, youtube_game, twitch_game):
         return {
-        # Dados Steam
+            # Dados Steam
             'name': steam_game['name'],
             'positive_reviews_steam': steam_game['positive_reviews_steam'],
             'negative_reviews_steam': steam_game['negative_reviews_steam'],
@@ -349,13 +380,13 @@ class Steam(Resource):
             'price': steam_game['price'],
             'languages': steam_game['languages'],
             'genre': steam_game['genre'],
-        # Dados Youtube
+            # Dados Youtube
             'count_videos': youtube_game['count_videos'],
             'count_views': youtube_game['count_views'],
             'count_likes': youtube_game['count_likes'],
             'count_dislikes': youtube_game['count_dislikes'],
             'count_comments': youtube_game['count_comments'],
-        # Dados Twitch
+            # Dados Twitch
             'total_views': twitch_game['total_views'],
             'streams': twitch_game['streams']
         }
