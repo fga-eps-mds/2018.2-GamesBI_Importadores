@@ -4,8 +4,11 @@ import requests
 import operator
 import os
 from functools import reduce
-from pprint import pprint
+# from pprint import pprint
 from urllib.parse import quote
+
+import colorific
+from PIL import Image
 
 TWITCH_HEADER = {'Client-ID': 'nhnlqt9mgdmkf9ls184tt1nd753472', 'Accept': 'application/json'}
 YOUTUBE_VIDEOS_LIMIT = int(os.environ['YOUTUBE_VIDEOS_LIMIT'])
@@ -25,18 +28,13 @@ class Steam(Resource):
             dictionary_game = self.merge_data(game_steam, game_youtube, game_twitch)
             array_post.append(dictionary_game)
 
-        # Ao final do for, criar requisição POST e enviar arrayPOST para o crossData
-
         # req = requests.post("http://web:8000/import_data/api/", json=array_post)
-
         # return req.json()
         return array_post
 
-
 # >>>>>>>>>>>>>>>>>> STEAM SECTION <<<<<<<<<<<<<<<<<<<<<<
 
-
-    # Requisita todos os jogos da steam e retorna um array com jogos selecionados
+# Requisita todos os jogos da steam e retorna um array com jogos selecionados
     def get_steam_data(self):
         url = 'http://steamspy.com/api.php?request=all'
         header = {'Accept': 'application/json'}
@@ -335,11 +333,63 @@ class Steam(Resource):
 
         return filtered_data[:2]
 
+# >>>>>>>>>>>>>>>>>> PALLETE SECTION <<<<<<<<<<<<<<<<<<<<<<
+
+    # Recebe uma url de uma imagem e retorna um array de dicionarios, onde cada
+    # dicionario representa uma cor da paleta de cores da imagem
+    def get_palette(self, img_url):
+        img = Image.open(requests.get(img_url, stream=True).raw)
+        palette = colorific.extract_colors(img)
+        array_colors = []
+        for color in palette.colors:
+            hex_value = colorific.rgb_to_hex(color.value)
+            dictionary_colors = {
+                'r': color.value[0],
+                'g': color.value[1],
+                'b': color.value[2],
+                'hex': hex_value
+            }
+            array_colors.append(dictionary_colors)
+        if palette.bgcolor is not None:
+            hex_value = colorific.rgb_to_hex(palette.bgcolor.value)
+            dictionary_colors = {
+                'r': palette.bgcolor.value[0],
+                'g': palette.bgcolor.value[1],
+                'b': palette.bgcolor.value[2],
+                'hex': hex_value
+            }
+            array_colors.append(dictionary_colors)
+
+        return array_colors
+
+    # Recebe um array de arrays retornardos pela funcao get_pallete e retorna um
+    # dicionario com a média de cores do jogo
+    def get_average_pallets(self, array_photos):
+        rgb_average = {
+            'r': 0,
+            'g': 0,
+            'b': 0
+        }
+        qtd_pallets = 0
+        for photo in array_photos:
+            for palette in photo:
+                rgb_average['r'] = rgb_average['r'] + palette['r']
+                rgb_average['g'] = rgb_average['g'] + palette['g']
+                rgb_average['b'] = rgb_average['b'] + palette['b']
+                qtd_pallets+=1
+
+        rgb_average['r'] = int(rgb_average['r'] / qtd_pallets)
+        rgb_average['g'] = int(rgb_average['g'] / qtd_pallets)
+        rgb_average['b'] = int(rgb_average['b'] / qtd_pallets)
+
+        return rgb_average
+
+
 # >>>>>>>>>>>>>>>>>> MERGE SECTION <<<<<<<<<<<<<<<<<<<<<<
 
     def merge_data(self, steam_game, youtube_game, twitch_game):
         return {
-        # Dados Steam
+            # Dados Steam
             'name': steam_game['name'],
             'positive_reviews_steam': steam_game['positive_reviews_steam'],
             'negative_reviews_steam': steam_game['negative_reviews_steam'],
@@ -349,13 +399,13 @@ class Steam(Resource):
             'price': steam_game['price'],
             'languages': steam_game['languages'],
             'genre': steam_game['genre'],
-        # Dados Youtube
+            # Dados Youtube
             'count_videos': youtube_game['count_videos'],
             'count_views': youtube_game['count_views'],
             'count_likes': youtube_game['count_likes'],
             'count_dislikes': youtube_game['count_dislikes'],
             'count_comments': youtube_game['count_comments'],
-        # Dados Twitch
+            # Dados Twitch
             'total_views': twitch_game['total_views'],
             'streams': twitch_game['streams']
         }
