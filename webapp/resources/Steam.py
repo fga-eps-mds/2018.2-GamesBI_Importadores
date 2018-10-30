@@ -28,18 +28,13 @@ class Steam(Resource):
             dictionary_game = self.merge_data(game_steam, game_youtube, game_twitch)
             array_post.append(dictionary_game)
 
-        # Ao final do for, criar requisição POST e enviar arrayPOST para o crossData
-
         # req = requests.post("http://web:8000/import_data/api/", json=array_post)
-
         # return req.json()
         return array_post
 
-
 # >>>>>>>>>>>>>>>>>> STEAM SECTION <<<<<<<<<<<<<<<<<<<<<<
 
-
-    # Requisita todos os jogos da steam e retorna um array com jogos selecionados
+# Requisita todos os jogos da steam e retorna um array com jogos selecionados
     def get_steam_data(self):
         url = 'http://steamspy.com/api.php?request=all'
         header = {'Accept': 'application/json'}
@@ -340,7 +335,9 @@ class Steam(Resource):
 
 # >>>>>>>>>>>>>>>>>> PALLETE SECTION <<<<<<<<<<<<<<<<<<<<<<
 
-    def get_pallete(self, img_url):
+    # Recebe uma url de uma imagem e retorna um array de dicionarios, onde cada
+    # dicionario representa uma cor da paleta de cores da imagem
+    def get_palette(self, img_url):
         img = Image.open(requests.get(img_url, stream=True).raw)
         palette = colorific.extract_colors(img)
         array_colors = []
@@ -364,6 +361,28 @@ class Steam(Resource):
             array_colors.append(dictionary_colors)
 
         return array_colors
+
+    # Recebe um array de arrays retornardos pela funcao get_pallete e retorna um
+    # dicionario com a média de cores do jogo
+    def get_average_pallets(self, array_photos):
+        rgb_average = {
+            'r': 0,
+            'g': 0,
+            'b': 0
+        }
+        qtd_pallets = 0
+        for photo in array_photos:
+            for palette in photo:
+                rgb_average['r'] = rgb_average['r'] + palette['r']
+                rgb_average['g'] = rgb_average['g'] + palette['g']
+                rgb_average['b'] = rgb_average['b'] + palette['b']
+                qtd_pallets+=1
+
+        rgb_average['r'] = int(rgb_average['r'] / qtd_pallets)
+        rgb_average['g'] = int(rgb_average['g'] / qtd_pallets)
+        rgb_average['b'] = int(rgb_average['b'] / qtd_pallets)
+
+        return rgb_average
 
 
 # >>>>>>>>>>>>>>>>>> MERGE SECTION <<<<<<<<<<<<<<<<<<<<<<
