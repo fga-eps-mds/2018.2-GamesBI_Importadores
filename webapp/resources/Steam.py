@@ -34,6 +34,15 @@ class Steam(Resource):
 
 # >>>>>>>>>>>>>>>>>> STEAM SECTION <<<<<<<<<<<<<<<<<<<<<<
 
+    def get_screens_game(self):
+        url = 'https://store.steampowered.com/api/appdetails?appids=10'
+        header = {'Accept': 'application/json'}
+        request = requests.get(url, headers=header)
+        data = request.json()
+        #print(data)
+        self.filter_screens_game(data)
+
+
 # Requisita todos os jogos da steam e retorna um array com jogos selecionados
     def get_steam_data(self):
         url = 'http://steamspy.com/api.php?request=all'
