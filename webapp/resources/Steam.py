@@ -18,6 +18,9 @@ STEAM_GAMES_LIMIT = int(os.environ['STEAM_GAMES_LIMIT'])
 class Steam(Resource):
 
     def get(self):
+        self.get_screensshots_game(10)
+        ##deixei esse return abaixo so pra ver como tava funcionando essa funcao
+        return
         # Declaracao do array de objetos que será enviado para o crossData
         array_post = []
         # Busca os jogos da steam e retorna um array de jogos selecionados
@@ -34,13 +37,39 @@ class Steam(Resource):
 
 # >>>>>>>>>>>>>>>>>> STEAM SECTION <<<<<<<<<<<<<<<<<<<<<<
 
-    def get_screens_game(self):
-        url = 'https://store.steampowered.com/api/appdetails?appids=10'
+    def get_screensshots_game(self, game_id):
+        url = 'https://store.steampowered.com/api/appdetails?appids={}'.format(game_id)
         header = {'Accept': 'application/json'}
         request = requests.get(url, headers=header)
         data = request.json()
         #print(data)
-        self.filter_screens_game(data)
+        return self.filter_game_screenshots(data, game_id)
+
+    def filter_game_screenshots(self, data, game_id):
+
+        list_screenshots = []
+        if gameid in data:
+            if 'data' in data['10']:
+                if 'header_image' in data['10']['data']:
+                    print('Imagem principal do jogo')
+                    print(data['10']['data']['header_image'])
+                    game_image = data['10']['data']['header_image']
+                else:
+                    game_image = None
+
+                screens = data['10']['data']['screenshots']
+                print('screenshots do jogo aqui:')
+                for screen in screens:
+                    if 'path_full' in screen:
+                        #print(screen['path_full'])
+                        list_screenshots.append(screen['path_full'])
+
+                print(list_screenshots)
+
+        images = {
+            'principal': game_image,
+            'screenshots':list_screenshots
+        }
 
 
 # Requisita todos os jogos da steam e retorna um array com jogos selecionados
