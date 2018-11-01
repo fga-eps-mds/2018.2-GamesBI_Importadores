@@ -4,7 +4,7 @@ import requests
 import operator
 import os
 from functools import reduce
-# from pprint import pprint
+# from pprint import p
 from urllib.parse import quote
 
 import colorific
@@ -84,7 +84,7 @@ class Steam(Resource):
                         date = data[str(game_id)]['data']['release_date']['date']
 
 
-        information = {
+        return {
             'header_image': game_image,
             'screenshots':list_screenshots,
             'language': languages,
@@ -92,7 +92,7 @@ class Steam(Resource):
             'date': date
         }
 
-        print(information)
+        #(information)
 
 
 # Requisita todos os jogos da steam e retorna um array com jogos selecionado
@@ -154,7 +154,6 @@ class Steam(Resource):
                     price = None
 
                 information = self.get_screensshots_game(id)
-                print(information)
 
                 filtered_data = {
                     'id': id,
@@ -168,10 +167,11 @@ class Steam(Resource):
                     'languages': information['language'],
                     'genre': information['genres'],
                     'main_image': information['header_image'],
-                    'screenshots': information['screenshots']
+                    'screenshots': information['screenshots'],
+                    'release_date': information['date']
                 }
                 select_games.append(filtered_data)
-                print(filtered_data)
+                print(filtered_data, 'AQUI\n\n\n\n\n')
 
         # Pegando somente 10 por vez para os testes
         return select_games
@@ -467,8 +467,9 @@ class Steam(Resource):
             'price': steam_game['price'],
             'languages': steam_game['languages'],
             'genre': steam_game['genre'],
-            'main_image': steam_game['header_image'],
+            'main_image': steam_game['main_image'],
             'screenshots': steam_game['screenshots'],
+            'release_date': steam_game['release_date'],
             # Dados Youtube
             'count_videos': youtube_game['count_videos'],
             'count_views': youtube_game['count_views'],
