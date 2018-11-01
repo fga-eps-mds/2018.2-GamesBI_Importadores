@@ -18,8 +18,6 @@ STEAM_GAMES_LIMIT = int(os.environ['STEAM_GAMES_LIMIT'])
 class Steam(Resource):
 
     def get(self):
-        self.get_screensshots_game(10)
-        return
         # Declaracao do array de objetos que será enviado para o crossData
         array_post = []
         # Busca os jogos da steam e retorna um array de jogos selecionadosa
@@ -34,7 +32,7 @@ class Steam(Resource):
         # return req.json()
         return array_post
 
-# >>>>>>>>>>>>>>>>>> STEAM SECTION <<<<<<<<<<<<<<<<<<<<<<
+# >>>>>>>>>>>>>>>>>> STEAM SECTION <<<<<<<<<<<<<<<<<<<<<<<
 
     def get_screensshots_game(self, game_id):
         url = 'https://store.steampowered.com/api/appdetails?appids={}'.format(game_id)
@@ -47,7 +45,7 @@ class Steam(Resource):
 
         list_screenshots = []
         list_genres = []
-        
+
         if str(game_id) in data:
             if 'data' in data[str(game_id)]:
 
@@ -118,7 +116,7 @@ class Steam(Resource):
                 }
                 if 'appid' in game:
                     id = game['appid']
-                    additional_information = self.get_infos_game_steam(id)
+                    #additional_information = self.get_infos_game_steam(id)
                 else:
                     id = None
                 if 'name' in game:
@@ -150,6 +148,10 @@ class Steam(Resource):
                     price = game['price']
                 else:
                     price = None
+
+                information = self.get_screensshots_game(id)
+                print(information)
+
                 filtered_data = {
                     'id': id,
                     'name': name,
@@ -159,10 +161,13 @@ class Steam(Resource):
                     'average_forever': average_forever,
                     'average_2weeks': average_2weeks,
                     'price': price,
-                    'languages': additional_information['languages'],
-                    'genre': additional_information['genre']
+                    'languages': information['language'],
+                    'genre': information['genres'],
+                    'main_image': information['header_image'],
+                    'screenshots': information['screenshots']
                 }
                 select_games.append(filtered_data)
+                print(filtered_data)
 
         # Pegando somente 10 por vez para os testes
         return select_games
@@ -236,7 +241,7 @@ class Steam(Resource):
         return sum / len(numbers)
 
 
-# >>>>>>>>>>>>>>>>>> YOUTUBE SECTION <<<<<<<<<<<<<<<<<<<<<<
+# >>>>>>>>>>>>>>>>>> YOUTUBE SECTION <<<<<<<<<<<<<<<<<<<<<<<
 
 
     def get_youtube_data(self, game_name):
@@ -458,6 +463,8 @@ class Steam(Resource):
             'price': steam_game['price'],
             'languages': steam_game['languages'],
             'genre': steam_game['genre'],
+            'main_image': steam_game['header_image'],
+            'screenshots': steam_game['screenshots'],
             # Dados Youtube
             'count_videos': youtube_game['count_videos'],
             'count_views': youtube_game['count_views'],
