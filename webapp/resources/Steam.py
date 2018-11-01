@@ -19,11 +19,10 @@ class Steam(Resource):
 
     def get(self):
         self.get_screensshots_game(10)
-        ##deixei esse return abaixo so pra ver como tava funcionando essa funcao
         return
         # Declaracao do array de objetos que será enviado para o crossData
         array_post = []
-        # Busca os jogos da steam e retorna um array de jogos selecionados
+        # Busca os jogos da steam e retorna um array de jogos selecionadosa
         array_steam_data = self.get_steam_data()
         for game_steam in array_steam_data:
             game_youtube = self.get_youtube_data(game_steam['name'])
@@ -42,34 +41,56 @@ class Steam(Resource):
         header = {'Accept': 'application/json'}
         request = requests.get(url, headers=header)
         data = request.json()
-        #print(data)
         return self.filter_game_screenshots(data, game_id)
 
     def filter_game_screenshots(self, data, game_id):
 
         list_screenshots = []
-        if gameid in data:
-            if 'data' in data['10']:
-                if 'header_image' in data['10']['data']:
-                    print('Imagem principal do jogo')
-                    print(data['10']['data']['header_image'])
-                    game_image = data['10']['data']['header_image']
+        list_genres = []
+        
+        if str(game_id) in data:
+            if 'data' in data[str(game_id)]:
+
+                if 'header_image' in data [str(game_id)]['data']:
+                    game_image = data[str(game_id)]['data']['header_image']
                 else:
                     game_image = None
 
-                screens = data['10']['data']['screenshots']
-                print('screenshots do jogo aqui:')
-                for screen in screens:
-                    if 'path_full' in screen:
-                        #print(screen['path_full'])
-                        list_screenshots.append(screen['path_full'])
+                if 'supported_languages' in data[str(game_id)]['data']:
+                    languages = data[str(game_id)]['data']['supported_languages'].split('<')[0]
+                    languages = languages.split(',')[0]
 
-                print(list_screenshots)
+                else:
+                    languages = None
 
-        images = {
-            'principal': game_image,
-            'screenshots':list_screenshots
+
+                if 'genres' in data[str(game_id)]['data']:
+                    genres = data[str(game_id)]['data']['genres']
+
+                    for genre in genres:
+                        list_genres.append(genre['description'])
+                else:
+                    genres = None
+
+                if 'screenshots' in data[str(game_id)]['data']:
+                    screens = data[str(game_id)]['data']['screenshots']
+
+                    for screen in screens:
+                        if 'path_full' in screen:
+                            list_screenshots.append(screen['path_full'])
+
+                else:
+                    list_screenshots = None
+
+
+        information = {
+            'header_image': game_image,
+            'screenshots':list_screenshots,
+            'language': languages,
+            'genres': list_genres
         }
+
+        print(information)
 
 
 # Requisita todos os jogos da steam e retorna um array com jogos selecionados
@@ -235,7 +256,7 @@ class Steam(Resource):
         for id in array_ids_youtube_game:
             video_data = self.get_video_youtube_data(id)
             print("Requisitando video com ID: {}".format(id))
-            print("------------------------------------------")
+            print("-------------------------------------------------")
             dictionary_game['count_views'] = dictionary_game['count_views'] + video_data['count_views']
             dictionary_game['count_likes'] = dictionary_game['count_likes'] + video_data['count_likes']
             dictionary_game['count_dislikes'] = dictionary_game['count_dislikes'] + video_data['count_dislikes']
