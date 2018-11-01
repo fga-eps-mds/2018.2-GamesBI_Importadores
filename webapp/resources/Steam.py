@@ -20,7 +20,7 @@ class Steam(Resource):
     def get(self):
         # Declaracao do array de objetos que será enviado para o crossData
         array_post = []
-        # Busca os jogos da steam e retorna um array de jogos selecionadosa
+        # Busca os jogos da steam e retorna um array de jogos selecionados
         array_steam_data = self.get_steam_data()
         for game_steam in array_steam_data:
             game_youtube = self.get_youtube_data(game_steam['name'])
@@ -61,7 +61,6 @@ class Steam(Resource):
                 else:
                     languages = None
 
-
                 if 'genres' in data[str(game_id)]['data']:
                     genres = data[str(game_id)]['data']['genres']
 
@@ -80,18 +79,23 @@ class Steam(Resource):
                 else:
                     list_screenshots = None
 
+                if 'release_date' in data[str(game_id)]['data']:
+                    if 'date' in data[str(game_id)]['data']['release_date']:
+                        date = data[str(game_id)]['data']['release_date']['date']
+
 
         information = {
             'header_image': game_image,
             'screenshots':list_screenshots,
             'language': languages,
-            'genres': list_genres
+            'genres': list_genres,
+            'date': date
         }
 
         print(information)
 
 
-# Requisita todos os jogos da steam e retorna um array com jogos selecionados
+# Requisita todos os jogos da steam e retorna um array com jogos selecionado
     def get_steam_data(self):
         url = 'http://steamspy.com/api.php?request=all'
         header = {'Accept': 'application/json'}
