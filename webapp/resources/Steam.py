@@ -28,7 +28,7 @@ class Steam(Resource):
             dictionary_game = self.merge_data(game_steam, game_youtube, game_twitch)
             array_post.append(dictionary_game)
 
-        # req = requests.post("http://web:8000/import_data/api/", json=array_post)
+        requests.post("http://web:8000/api/", json=array_post)
         # return req.json()
         return array_post
 
@@ -156,7 +156,7 @@ class Steam(Resource):
                             list_pallets.append(pallete)
                             dictionary_screenshot = {
                                 'url': url,
-                                'pallete': pallete
+                                'palette': pallete
                             }
                         else:
                             dictionary_screenshot = None
