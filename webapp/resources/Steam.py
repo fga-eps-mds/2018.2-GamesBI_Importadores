@@ -4,7 +4,7 @@ import requests
 import operator
 import os
 from functools import reduce
-# from pprint import pprint
+# from pprint import p
 from urllib.parse import quote
 
 import colorific
@@ -20,7 +20,7 @@ class Steam(Resource):
     def get(self):
         # Declaracao do array de objetos que será enviado para o crossData
         array_post = []
-        # Busca os jogos da steam e retorna um array de jogos selecionados
+        # # Busca os jogos da steam e retorna um array de jogos selecionados
         array_steam_data = self.get_steam_data()
         for game_steam in array_steam_data:
             game_youtube = self.get_youtube_data(game_steam['name'])
@@ -32,9 +32,10 @@ class Steam(Resource):
         # return req.json()
         return array_post
 
-# >>>>>>>>>>>>>>>>>> STEAM SECTION <<<<<<<<<<<<<<<<<<<<<<
+# >>>>>>>>>>>>>>>>>> STEAM SECTION <<<<<<<<<<<<<<<<<<<<<<<
 
-# Requisita todos os jogos da steam e retorna um array com jogos selecionados
+
+# Requisita todos os jogos da steam e retorna um array com jogos selecionado
     def get_steam_data(self):
         url = 'http://steamspy.com/api.php?request=all'
         header = {'Accept': 'application/json'}
@@ -46,16 +47,17 @@ class Steam(Resource):
     def filter_steam_games(self, games_data):
         select_games = []
         count = 0
-
         for game in games_data.values():
             if self.valid_game(game):
                 if count >= STEAM_GAMES_LIMIT:
                     break
-
                 count += 1
                 additional_information = {
+                    'main_image': None,
+                    'language': None,
                     'genre': None,
-                    'languages': None
+                    'screenshots': None,
+                    'release_date': None
                 }
                 if 'appid' in game:
                     id = game['appid']
@@ -91,6 +93,7 @@ class Steam(Resource):
                     price = game['price']
                 else:
                     price = None
+
                 filtered_data = {
                     'id': id,
                     'name': name,
@@ -100,37 +103,98 @@ class Steam(Resource):
                     'average_forever': average_forever,
                     'average_2weeks': average_2weeks,
                     'price': price,
-                    'languages': additional_information['languages'],
-                    'genre': additional_information['genre']
+                    'main_image': additional_information['main_image'],
+                    'language': additional_information['language'],
+                    'genre': additional_information['genre'],
+                    'release_date': additional_information['release_date'],
+                    'screenshots': additional_information['screenshots'],
+                    'r_average': additional_information['r_average'],
+                    'g_average': additional_information['g_average'],
+                    'b_average': additional_information['b_average']
                 }
                 select_games.append(filtered_data)
 
-        # Pegando somente 10 por vez para os testes
         return select_games
 
-    # Requisita jogo individualmente e retorna um dicionario com languages e genre referentes a um jogo
-    def get_infos_game_steam(self, id_game):
-        url = 'http://steamspy.com/api.php?request=appdetails&appid={}'.format(id_game)
+
+    def get_infos_game_steam(self, game_id):
+        url = 'https://store.steampowered.com/api/appdetails?appids={}'.format(game_id)
         header = {'Accept': 'application/json'}
         request = requests.get(url, headers=header)
         data = request.json()
         return self.filter_infos_game_steam(data)
 
-    # Filtra dados de um jogo e retorna um dicionario com languages e genre
-    def filter_infos_game_steam(self, game_data):
-        if 'languages' in game_data:
-            languages = game_data['languages'].split(',')[0]
-        else:
-            languages = None
 
-        if 'genre' in game_data:
-            genre = game_data['genre'].split(", ")[0]
-        else:
-            genre = None
-        return {
-            'genre': genre,
-            'languages': languages
-        }
+    def filter_infos_game_steam(self, game_data):
+        list_screenshots = []
+        for game in game_data.values():
+            if 'data' in game:
+                data = game["data"]
+
+                if 'header_image' in data:
+                    main_image = data['header_image']
+                else:
+                    main_image = None
+
+                if 'supported_languages' in data:
+                    languages = data['supported_languages'].split('<')[0].split(',')[0]
+                else:
+                    languages = None
+
+                if 'genres' in data:
+                    array_genres = data['genres']
+                    genre = array_genres[0]['description']
+                else:
+                    genre = None
+
+                if 'screenshots' in data:
+                    list_pallets = []
+                    for screenshots in data['screenshots']:
+                        if 'path_thumbnail' in screenshots:
+                            url = screenshots['path_thumbnail']
+                            pallete = self.get_palette(url)
+                            list_pallets.append(pallete)
+                            dictionary_screenshot = {
+                                'url': url,
+                                'pallete': pallete
+                            }
+                        else:
+                            dictionary_screenshot = None
+                        list_screenshots.append(dictionary_screenshot)
+                    pallete_game = self.get_average_pallets(list_pallets)
+
+                if 'release_date' in data:
+                    release = data['release_date']
+                    if 'date' in release:
+                        release_date = release['date']
+                    else:
+                        release_date = None
+
+                if 'r' in pallete_game:
+                    r_average = pallete_game['r']
+                else:
+                    r_average = None
+
+                if 'g' in pallete_game:
+                    g_average = pallete_game['g']
+                else:
+                    g_average = None
+
+                if 'b' in pallete_game:
+                    b_average = pallete_game['b']
+                else:
+                    b_average = None
+
+            return {
+                'r_average': r_average,
+                'g_average': g_average,
+                'b_average': b_average,
+                'main_image': main_image,
+                'language': languages,
+                'genre': genre,
+                'screenshots': list_screenshots,
+                'release_date': release_date
+            }
 
 
     # Valida se aquele jogo tem uma quantidade mínima de owners
@@ -177,7 +241,7 @@ class Steam(Resource):
         return sum / len(numbers)
 
 
-# >>>>>>>>>>>>>>>>>> YOUTUBE SECTION <<<<<<<<<<<<<<<<<<<<<<
+# >>>>>>>>>>>>>>>>>> YOUTUBE SECTION <<<<<<<<<<<<<<<<<<<<<<<
 
 
     def get_youtube_data(self, game_name):
@@ -197,7 +261,7 @@ class Steam(Resource):
         for id in array_ids_youtube_game:
             video_data = self.get_video_youtube_data(id)
             print("Requisitando video com ID: {}".format(id))
-            print("------------------------------------------")
+            print("-------------------------------------------------")
             dictionary_game['count_views'] = dictionary_game['count_views'] + video_data['count_views']
             dictionary_game['count_likes'] = dictionary_game['count_likes'] + video_data['count_likes']
             dictionary_game['count_dislikes'] = dictionary_game['count_dislikes'] + video_data['count_dislikes']
@@ -390,6 +454,7 @@ class Steam(Resource):
     def merge_data(self, steam_game, youtube_game, twitch_game):
         return {
             # Dados Steam
+            'id_steam': steam_game['id'],
             'name': steam_game['name'],
             'positive_reviews_steam': steam_game['positive_reviews_steam'],
             'negative_reviews_steam': steam_game['negative_reviews_steam'],
@@ -397,8 +462,14 @@ class Steam(Resource):
             'average_forever': steam_game['average_forever'],
             'average_2weeks': steam_game['average_2weeks'],
             'price': steam_game['price'],
-            'languages': steam_game['languages'],
+            'language': steam_game['language'],
             'genre': steam_game['genre'],
+            'main_image': steam_game['main_image'],
+            'screenshots': steam_game['screenshots'],
+            'release_date': steam_game['release_date'],
+            'r_average': steam_game['r_average'],
+            'g_average': steam_game['g_average'],
+            'b_average': steam_game['b_average'],
             # Dados Youtube
             'count_videos': youtube_game['count_videos'],
             'count_views': youtube_game['count_views'],
