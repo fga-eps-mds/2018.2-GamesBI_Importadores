@@ -28,8 +28,6 @@ class Steam(Resource):
             dictionary_game = self.merge_data(game_steam, game_youtube, game_twitch)
             array_post.append(dictionary_game)
 
-        requests.post("http://web:8000/api/", json=array_post)
-        # return req.json()
         return array_post
 
 # >>>>>>>>>>>>>>>>>> STEAM SECTION <<<<<<<<<<<<<<<<<<<<<<<
@@ -54,8 +52,8 @@ class Steam(Resource):
                 count += 1
                 additional_information = {
                     'main_image': None,
-                    'language': None,
-                    'genre': None,
+                    'languages': None,
+                    'genres': None,
                     'screenshots': None,
                     'release_date': None
                 }
@@ -104,8 +102,8 @@ class Steam(Resource):
                     'average_2weeks': average_2weeks,
                     'price': price,
                     'main_image': additional_information['main_image'],
-                    'language': additional_information['language'],
-                    'genre': additional_information['genre'],
+                    'languages': additional_information['languages'],
+                    'genres': additional_information['genres'],
                     'release_date': additional_information['release_date'],
                     'screenshots': additional_information['screenshots'],
                     'r_average': additional_information['r_average'],
@@ -137,15 +135,24 @@ class Steam(Resource):
                     main_image = None
 
                 if 'supported_languages' in data:
-                    languages = data['supported_languages'].split('<')[0].split(',')[0]
+                    array_languages = data['supported_languages'].split(', ')
+                    languages = []
+                    for language in array_languages:
+                        strong = True if '<strong>' in language else False
+                        if strong:
+                            languages.append(language.split('<')[0])
+                        else:
+                            languages.append(language)
                 else:
                     languages = None
 
                 if 'genres' in data:
                     array_genres = data['genres']
-                    genre = array_genres[0]['description']
+                    genres = []
+                    for genre in array_genres:
+                        genres.append(genre['description'])
                 else:
-                    genre = None
+                    genres = None
 
                 if 'screenshots' in data:
                     list_pallets = []
@@ -190,8 +197,8 @@ class Steam(Resource):
                 'g_average': g_average,
                 'b_average': b_average,
                 'main_image': main_image,
-                'language': languages,
-                'genre': genre,
+                'languages': languages,
+                'genres': genres,
                 'screenshots': list_screenshots,
                 'release_date': release_date
             }
@@ -462,8 +469,8 @@ class Steam(Resource):
             'average_forever': steam_game['average_forever'],
             'average_2weeks': steam_game['average_2weeks'],
             'price': steam_game['price'],
-            'language': steam_game['language'],
-            'genre': steam_game['genre'],
+            'languages': steam_game['languages'],
+            'genres': steam_game['genres'],
             'main_image': steam_game['main_image'],
             'screenshots': steam_game['screenshots'],
             'release_date': steam_game['release_date'],
