@@ -38,8 +38,14 @@ class Steam(Resource):
         url = 'http://steamspy.com/api.php?request=all'
         header = {'Accept': 'application/json'}
         request = requests.get(url, headers=header)
-        data = request.json()
-        return self.filter_steam_games(data)
+        status = request.status_code
+        print('status:{}'.format(status))
+        if status == 200:
+            data = request.json()
+            return self.filter_steam_games(data)
+        else:
+            data = {}
+            return self.filter_steam_games(data)
 
     # Filtra os dados da steam e retorna um array com jogos selecionados
     def filter_steam_games(self, games_data):
@@ -52,8 +58,8 @@ class Steam(Resource):
                 count += 1
                 additional_information = {
                     'main_image': None,
-                    'languages': None,
-                    'genres': None,
+                    'language': None,
+                    'genre': None,
                     'screenshots': None,
                     'release_date': None
                 }
@@ -102,8 +108,8 @@ class Steam(Resource):
                     'average_2weeks': average_2weeks,
                     'price': price,
                     'main_image': additional_information['main_image'],
-                    'languages': additional_information['languages'],
-                    'genres': additional_information['genres'],
+                    'language': additional_information['language'],
+                    'genre': additional_information['genre'],
                     'release_date': additional_information['release_date'],
                     'screenshots': additional_information['screenshots'],
                     'r_average': additional_information['r_average'],
@@ -119,8 +125,13 @@ class Steam(Resource):
         url = 'https://store.steampowered.com/api/appdetails?appids={}'.format(game_id)
         header = {'Accept': 'application/json'}
         request = requests.get(url, headers=header)
-        data = request.json()
-        return self.filter_infos_game_steam(data)
+        status = request.status_code
+        if status == 200:
+            data = request.json()
+            return self.filter_infos_game_steam(data)
+        else:
+            data = {}
+            return self.filter_infos_game_steam(data)
 
 
     def filter_infos_game_steam(self, game_data):
@@ -135,24 +146,15 @@ class Steam(Resource):
                     main_image = None
 
                 if 'supported_languages' in data:
-                    array_languages = data['supported_languages'].split(', ')
-                    languages = []
-                    for language in array_languages:
-                        strong = True if '<strong>' in language else False
-                        if strong:
-                            languages.append(language.split('<')[0])
-                        else:
-                            languages.append(language)
+                    languages = data['supported_languages'].split('<')[0].split(',')[0]
                 else:
                     languages = None
 
                 if 'genres' in data:
                     array_genres = data['genres']
-                    genres = []
-                    for genre in array_genres:
-                        genres.append(genre['description'])
+                    genre = array_genres[0]['description']
                 else:
-                    genres = None
+                    genre = None
 
                 if 'screenshots' in data:
                     list_pallets = []
@@ -197,8 +199,8 @@ class Steam(Resource):
                 'g_average': g_average,
                 'b_average': b_average,
                 'main_image': main_image,
-                'languages': languages,
-                'genres': genres,
+                'language': languages,
+                'genre': genre,
                 'screenshots': list_screenshots,
                 'release_date': release_date
             }
@@ -469,8 +471,8 @@ class Steam(Resource):
             'average_forever': steam_game['average_forever'],
             'average_2weeks': steam_game['average_2weeks'],
             'price': steam_game['price'],
-            'languages': steam_game['languages'],
-            'genres': steam_game['genres'],
+            'language': steam_game['language'],
+            'genre': steam_game['genre'],
             'main_image': steam_game['main_image'],
             'screenshots': steam_game['screenshots'],
             'release_date': steam_game['release_date'],
