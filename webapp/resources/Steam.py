@@ -39,7 +39,6 @@ class Steam(Resource):
         header = {'Accept': 'application/json'}
         request = requests.get(url, headers=header)
         status = request.status_code
-        print('status:{}'.format(status))
         if status == 200:
             data = request.json()
             return self.filter_steam_games(data)
@@ -411,27 +410,32 @@ class Steam(Resource):
     # Recebe uma url de uma imagem e retorna um array de dicionarios, onde cada
     # dicionario representa uma cor da paleta de cores da imagem
     def get_palette(self, img_url):
-        img = Image.open(requests.get(img_url, stream=True).raw)
-        palette = colorific.extract_colors(img)
-        array_colors = []
-        for color in palette.colors:
-            hex_value = colorific.rgb_to_hex(color.value)
-            dictionary_colors = {
-                'r': color.value[0],
-                'g': color.value[1],
-                'b': color.value[2],
-                'hex': hex_value
-            }
-            array_colors.append(dictionary_colors)
-        if palette.bgcolor is not None:
-            hex_value = colorific.rgb_to_hex(palette.bgcolor.value)
-            dictionary_colors = {
-                'r': palette.bgcolor.value[0],
-                'g': palette.bgcolor.value[1],
-                'b': palette.bgcolor.value[2],
-                'hex': hex_value
-            }
-            array_colors.append(dictionary_colors)
+        request = requests.get(img_url, stream=True)
+        status = request.status_code
+        if status == 200:
+            img = Image.open(request.raw)
+            palette = colorific.extract_colors(img)
+            array_colors = []
+            for color in palette.colors:
+                hex_value = colorific.rgb_to_hex(color.value)
+                dictionary_colors = {
+                    'r': color.value[0],
+                    'g': color.value[1],
+                    'b': color.value[2],
+                    'hex': hex_value
+                }
+                array_colors.append(dictionary_colors)
+            if palette.bgcolor is not None:
+                hex_value = colorific.rgb_to_hex(palette.bgcolor.value)
+                dictionary_colors = {
+                    'r': palette.bgcolor.value[0],
+                    'g': palette.bgcolor.value[1],
+                    'b': palette.bgcolor.value[2],
+                    'hex': hex_value
+                }
+                array_colors.append(dictionary_colors)
+        else:
+            array_colors = []
 
         return array_colors
 
