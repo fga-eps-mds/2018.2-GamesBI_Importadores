@@ -289,8 +289,13 @@ class Steam(Resource):
             key,
         )
         request = requests.get(url, headers=header)
-        data = request.json()
-        return self.filter_ids_youtube_game(data)
+        status = request.status_code
+        if status == 200:
+            data = request.json()
+            return self.filter_ids_youtube_game(data)
+        else:
+            data = {}
+            return self.filter_ids_youtube_game(data)
 
     # Retorna um array com todos os ID's de videos relacionados a um jogo
     def filter_ids_youtube_game(self, youtube_results):
@@ -316,8 +321,13 @@ class Steam(Resource):
         key = 'AIzaSyDmDXP_gaB7cog4f0slbbdJ3RACsY5WQIw'
         url = 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id={}&key={}'.format(id_video, key)
         request = requests.get(url, headers=header)
-        data = request.json()
-        return self.filter_video_youtube_gama(data)
+        status = request.status_code
+        if status == 200:
+            data = request.json()
+            return self.filter_video_youtube_gama(data)
+        else:
+            data = {}
+            return self.filter_video_youtube_gama(data)
 
     # Filtra os dados de um video do youtube e retorna um objeto com esses dados
     def filter_video_youtube_gama(self, video_data):
