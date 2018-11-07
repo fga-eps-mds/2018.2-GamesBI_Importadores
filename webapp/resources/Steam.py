@@ -370,12 +370,15 @@ class Steam(Resource):
         url = 'https://api.twitch.tv/helix/games?name={}'.format(quote(game_name))
 
         game_data = requests.get(url, headers=TWITCH_HEADER)
-        print(game_name)
-
-        ndata = game_data.json()
-        print(ndata)
-
-        return self.filter_game_data(ndata['data'][0])
+        status = game_data.status_code
+        if status == 200:
+            print(game_name)
+            ndata = game_data.json()
+            print(ndata)
+            return self.filter_game_data(ndata['data'][0])
+        else:
+            ndata = {}
+            return self.filter_game_data(ndata)
 
     def filter_game_data(self, ndata):
         total_views = 0
@@ -402,9 +405,13 @@ class Steam(Resource):
         url =  'https://api.twitch.tv/helix/streams?game_id={}'.format(game_id)
 
         stream_data = requests.get(url, headers=TWITCH_HEADER)
-        ndata = stream_data.json()
-
-        return self.filter_stream_data(ndata)
+        status = stream_data.status_code
+        if status == 200:
+            ndata = stream_data.json()
+            return self.filter_stream_data(ndata)
+        else:
+            ndata = {}
+            return self.filter_stream_data(ndata)
 
     def filter_stream_data(self, ndata):
         filtered_data = []
