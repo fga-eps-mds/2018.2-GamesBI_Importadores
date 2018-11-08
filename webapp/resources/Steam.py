@@ -204,6 +204,18 @@ class Steam(Resource):
                 'release_date': release_date
             }
 
+        if not game_data:
+            return {
+                'r_average': None,
+                'g_average': None,
+                'b_average': None,
+                'main_image': None,
+                'language': None,
+                'genre': None,
+                'screenshots': None,
+                'release_date': None
+            }
+
 
     # Valida se aquele jogo tem uma quantidade mínima de owners
     def valid_game(self, game):
@@ -540,6 +552,5 @@ class Steam(Resource):
         merge_dictionary.update(steam_dictionary)
         merge_dictionary.update(youtube_dictionary)
         merge_dictionary.update(twitch_dictionary)
-        print(merge_dictionary)
 
         return merge_dictionary
