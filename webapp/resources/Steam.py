@@ -40,11 +40,9 @@ class Steam(Resource):
         request = requests.get(url, headers=header)
         status = request.status_code
         if status == 200:
-            print('deu bom: {}'.format(status))
             data = request.json()
             return self.filter_steam_games(data)
         else:
-            print('deu ruim: {}'.format(status))
             data = {}
             return self.filter_steam_games(data)
 
@@ -484,28 +482,12 @@ class Steam(Resource):
 # >>>>>>>>>>>>>>>>>> MERGE SECTION <<<<<<<<<<<<<<<<<<<<<<
 
     def merge_data(self, steam_game, youtube_game, twitch_game):
+        array = []
         # Dados Steam
-        if not steam_game:
-            steam_dicionary = {
-            'id_steam': None,
-            'name': None,
-            'positive_reviews_steam': None,
-            'negative_reviews_steam': None,
-            'owners': None,
-            'average_forever': None,
-            'average_2weeks': None,
-            'price': None,
-            'language': None,
-            'genre': None,
-            'main_image': None,
-            'screenshots': None,
-            'release_date': None,
-            'r_average': None,
-            'g_average': None,
-            'b_average': None
-            }
+        if (len(steam_game) == 0):
+            return array
         else:
-            steam_dicionary = {
+            steam_dictionary = {
             'id_steam': steam_game['id'],
             'name': steam_game['name'],
             'positive_reviews_steam': steam_game['positive_reviews_steam'],
@@ -525,8 +507,8 @@ class Steam(Resource):
             }
 
         # Dados Youtube
-        if not youtube_game:
-            youtube_dicionary = {
+        if (len(youtube_game) == 0):
+            youtube_dictionary = {
             'count_videos': None,
             'count_views': None,
             'count_likes': None,
@@ -534,7 +516,7 @@ class Steam(Resource):
             'count_comments': None
             }
         else:
-            youtube_dicionary = {
+            youtube_dictionary = {
             'count_videos': youtube_game['count_videos'],
             'count_views': youtube_game['count_views'],
             'count_likes': youtube_game['count_likes'],
@@ -543,19 +525,21 @@ class Steam(Resource):
             }
 
         # Dados Twitch
-        if not twitch_game:
-            twitch_dicionary = {
+        if (len(twitch_game) == 0):
+            twitch_dictionary = {
             'total_views': None,
             'streams': None
             }
         else:
-            twitch_dicionary = {
+            twitch_dictionary = {
             'total_views': twitch_game['total_views'],
             'streams': twitch_game['streams']
             }
 
-        return {
-            steam_dicionary,
-            youtube_dicionary,
-            twitch_dicionary
-            }
+        merge_dictionary = {}
+        merge_dictionary.update(steam_dictionary)
+        merge_dictionary.update(youtube_dictionary)
+        merge_dictionary.update(twitch_dictionary)
+        print(merge_dictionary)
+
+        return merge_dictionary
