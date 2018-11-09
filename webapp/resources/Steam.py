@@ -20,8 +20,7 @@ class Steam(object):
             data = request.json()
             return self.filter_steam_games(data)
         else:
-            data = {}
-            return self.filter_steam_games(data)
+            return []
 
     # Filtra os dados da steam e retorna um array com jogos selecionados
     def filter_steam_games(self, games_data):
@@ -32,16 +31,8 @@ class Steam(object):
                 if count >= STEAM_GAMES_LIMIT:
                     break
                 count += 1
-                additional_information = {
-                    'main_image': None,
-                    'language': None,
-                    'genre': None,
-                    'screenshots': None,
-                    'release_date': None
-                }
                 if 'appid' in game:
                     id = game['appid']
-                    additional_information = self.get_infos_game_steam(id)
                 else:
                     id = None
                 if 'name' in game:
@@ -73,7 +64,7 @@ class Steam(object):
                     price = game['price']
                 else:
                     price = None
-
+                additional_information = self.get_infos_game_steam(id)
                 filtered_data = {
                     'id': id,
                     'name': name,
@@ -84,8 +75,8 @@ class Steam(object):
                     'average_2weeks': average_2weeks,
                     'price': price,
                     'main_image': additional_information['main_image'],
-                    'language': additional_information['language'],
-                    'genre': additional_information['genre'],
+                    'languages': additional_information['languages'],
+                    'genres': additional_information['genres'],
                     'release_date': additional_information['release_date'],
                     'screenshots': additional_information['screenshots'],
                     'r_average': additional_information['r_average'],
@@ -105,11 +96,18 @@ class Steam(object):
             data = request.json()
             return self.filter_infos_game_steam(data)
         else:
-            data = {}
-            return self.filter_infos_game_steam(data)
+            return {
+                'r_average': None,
+                'g_average': None,
+                'b_average': None,
+                'main_image': None,
+                'languages': [],
+                'genres': [],
+                'screenshots': [],
+                'release_date': None
+            }
 
     def filter_infos_game_steam(self, game_data):
-        list_screenshots = []
         for game in game_data.values():
             if 'data' in game:
                 data = game["data"]
@@ -120,21 +118,32 @@ class Steam(object):
                     main_image = None
 
                 if 'supported_languages' in data:
-                    languages = data['supported_languages'].split('<')[0].split(',')[0]
+                    array_languages = data['supported_languages'].split(', ')
+                    languages = []
+                    for language in array_languages:
+                        strong = True if '<strong>' in language else False
+                        if strong:
+                            languages.append(language.split('<')[0])
+                        else:
+                            languages.append(language)
                 else:
-                    languages = None
+                    languages = []
 
                 if 'genres' in data:
-                    array_genres = data['genres']
-                    genre = array_genres[0]['description']
+                    genres = []
+                    array_genres = data["genres"]
+                    for genre in array_genres:
+                        if 'description' in genre:
+                            genres.append(genre['description'])
                 else:
-                    genre = None
+                    genres = []
 
+                list_screenshots = []
                 if 'screenshots' in data:
                     list_pallets = []
-                    for screenshots in data['screenshots']:
-                        if 'path_thumbnail' in screenshots:
-                            url = screenshots['path_thumbnail']
+                    for screenshot in data['screenshots']:
+                        if 'path_thumbnail' in screenshot:
+                            url = screenshot['path_thumbnail']
                             pallete = self.get_palette(url)
                             list_pallets.append(pallete)
                             dictionary_screenshot = {
@@ -145,6 +154,8 @@ class Steam(object):
                             dictionary_screenshot = None
                         list_screenshots.append(dictionary_screenshot)
                     pallete_game = self.get_average_pallets(list_pallets)
+                else:
+                    pallete_game = []
 
                 if 'release_date' in data:
                     release = data['release_date']
@@ -152,6 +163,8 @@ class Steam(object):
                         release_date = release['date']
                     else:
                         release_date = None
+                else:
+                    release_date = None
 
                 if 'r' in pallete_game:
                     r_average = pallete_game['r']
@@ -173,22 +186,10 @@ class Steam(object):
                 'g_average': g_average,
                 'b_average': b_average,
                 'main_image': main_image,
-                'language': languages,
-                'genre': genre,
+                'languages': languages,
+                'genres': genres,
                 'screenshots': list_screenshots,
                 'release_date': release_date
-            }
-
-        if not game_data:
-            return {
-                'r_average': None,
-                'g_average': None,
-                'b_average': None,
-                'main_image': None,
-                'language': None,
-                'genre': None,
-                'screenshots': None,
-                'release_date': None
             }
 
     # Valida se aquele jogo tem uma quantidade mínima de owners
@@ -281,10 +282,11 @@ class Steam(object):
                 rgb_average['r'] = rgb_average['r'] + palette['r']
                 rgb_average['g'] = rgb_average['g'] + palette['g']
                 rgb_average['b'] = rgb_average['b'] + palette['b']
-                qtd_pallets+=1
-
-        rgb_average['r'] = int(rgb_average['r'] / qtd_pallets)
-        rgb_average['g'] = int(rgb_average['g'] / qtd_pallets)
-        rgb_average['b'] = int(rgb_average['b'] / qtd_pallets)
-
-        return rgb_average
+                qtd_pallets += 1
+        if qtd_pallets > 0:
+            rgb_average['r'] = int(rgb_average['r'] / qtd_pallets)
+            rgb_average['g'] = int(rgb_average['g'] / qtd_pallets)
+            rgb_average['b'] = int(rgb_average['b'] / qtd_pallets)
+            return rgb_average
+        else:
+            return []

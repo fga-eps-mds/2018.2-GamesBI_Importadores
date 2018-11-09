@@ -12,17 +12,16 @@ class Importer(Resource):
         array_steam_data = steam.get_steam_data()
         for game_steam in array_steam_data:
             game_youtube = youtube.get_youtube_data(game_steam['name'])
-            game_twitch =  twitch.get_twitch_data(game_steam['name'])
+            game_twitch = twitch.get_twitch_data(game_steam['name'])
             dictionary_game = self.merge_data(game_steam, game_youtube, game_twitch)
             array_post.append(dictionary_game)
 
         return array_post
 
     def merge_data(self, steam_game, youtube_game, twitch_game):
-        array = []
         # Dados Steam
         if (len(steam_game) == 0):
-            return array
+            return []
         else:
             steam_dictionary = {
                 'id_steam': steam_game['id'],
@@ -33,8 +32,8 @@ class Importer(Resource):
                 'average_forever': steam_game['average_forever'],
                 'average_2weeks': steam_game['average_2weeks'],
                 'price': steam_game['price'],
-                'language': steam_game['language'],
-                'genre': steam_game['genre'],
+                'languages': steam_game['languages'],
+                'genres': steam_game['genres'],
                 'main_image': steam_game['main_image'],
                 'screenshots': steam_game['screenshots'],
                 'release_date': steam_game['release_date'],
