@@ -38,8 +38,13 @@ class Steam(Resource):
         url = 'http://steamspy.com/api.php?request=all'
         header = {'Accept': 'application/json'}
         request = requests.get(url, headers=header)
-        data = request.json()
-        return self.filter_steam_games(data)
+        status = request.status_code
+        if status == 200:
+            data = request.json()
+            return self.filter_steam_games(data)
+        else:
+            data = {}
+            return self.filter_steam_games(data)
 
     # Filtra os dados da steam e retorna um array com jogos selecionados
     def filter_steam_games(self, games_data):
@@ -52,8 +57,8 @@ class Steam(Resource):
                 count += 1
                 additional_information = {
                     'main_image': None,
-                    'languages': None,
-                    'genres': None,
+                    'language': None,
+                    'genre': None,
                     'screenshots': None,
                     'release_date': None
                 }
@@ -102,8 +107,8 @@ class Steam(Resource):
                     'average_2weeks': average_2weeks,
                     'price': price,
                     'main_image': additional_information['main_image'],
-                    'languages': additional_information['languages'],
-                    'genres': additional_information['genres'],
+                    'language': additional_information['language'],
+                    'genre': additional_information['genre'],
                     'release_date': additional_information['release_date'],
                     'screenshots': additional_information['screenshots'],
                     'r_average': additional_information['r_average'],
@@ -119,8 +124,13 @@ class Steam(Resource):
         url = 'https://store.steampowered.com/api/appdetails?appids={}'.format(game_id)
         header = {'Accept': 'application/json'}
         request = requests.get(url, headers=header)
-        data = request.json()
-        return self.filter_infos_game_steam(data)
+        status = request.status_code
+        if status == 200:
+            data = request.json()
+            return self.filter_infos_game_steam(data)
+        else:
+            data = {}
+            return self.filter_infos_game_steam(data)
 
 
     def filter_infos_game_steam(self, game_data):
@@ -135,24 +145,15 @@ class Steam(Resource):
                     main_image = None
 
                 if 'supported_languages' in data:
-                    array_languages = data['supported_languages'].split(', ')
-                    languages = []
-                    for language in array_languages:
-                        strong = True if '<strong>' in language else False
-                        if strong:
-                            languages.append(language.split('<')[0])
-                        else:
-                            languages.append(language)
+                    languages = data['supported_languages'].split('<')[0].split(',')[0]
                 else:
                     languages = None
 
                 if 'genres' in data:
                     array_genres = data['genres']
-                    genres = []
-                    for genre in array_genres:
-                        genres.append(genre['description'])
+                    genre = array_genres[0]['description']
                 else:
-                    genres = None
+                    genre = None
 
                 if 'screenshots' in data:
                     list_pallets = []
@@ -197,10 +198,22 @@ class Steam(Resource):
                 'g_average': g_average,
                 'b_average': b_average,
                 'main_image': main_image,
-                'languages': languages,
-                'genres': genres,
+                'language': languages,
+                'genre': genre,
                 'screenshots': list_screenshots,
                 'release_date': release_date
+            }
+
+        if not game_data:
+            return {
+                'r_average': None,
+                'g_average': None,
+                'b_average': None,
+                'main_image': None,
+                'language': None,
+                'genre': None,
+                'screenshots': None,
+                'release_date': None
             }
 
 
@@ -288,8 +301,13 @@ class Steam(Resource):
             key,
         )
         request = requests.get(url, headers=header)
-        data = request.json()
-        return self.filter_ids_youtube_game(data)
+        status = request.status_code
+        if status == 200:
+            data = request.json()
+            return self.filter_ids_youtube_game(data)
+        else:
+            data = {}
+            return self.filter_ids_youtube_game(data)
 
     # Retorna um array com todos os ID's de videos relacionados a um jogo
     def filter_ids_youtube_game(self, youtube_results):
@@ -315,8 +333,13 @@ class Steam(Resource):
         key = 'AIzaSyDmDXP_gaB7cog4f0slbbdJ3RACsY5WQIw'
         url = 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id={}&key={}'.format(id_video, key)
         request = requests.get(url, headers=header)
-        data = request.json()
-        return self.filter_video_youtube_gama(data)
+        status = request.status_code
+        if status == 200:
+            data = request.json()
+            return self.filter_video_youtube_gama(data)
+        else:
+            data = {}
+            return self.filter_video_youtube_gama(data)
 
     # Filtra os dados de um video do youtube e retorna um objeto com esses dados
     def filter_video_youtube_gama(self, video_data):
@@ -359,12 +382,15 @@ class Steam(Resource):
         url = 'https://api.twitch.tv/helix/games?name={}'.format(quote(game_name))
 
         game_data = requests.get(url, headers=TWITCH_HEADER)
-        print(game_name)
-
-        ndata = game_data.json()
-        print(ndata)
-
-        return self.filter_game_data(ndata['data'][0])
+        status = game_data.status_code
+        if status == 200:
+            print(game_name)
+            ndata = game_data.json()
+            print(ndata)
+            return self.filter_game_data(ndata['data'][0])
+        else:
+            ndata = {}
+            return self.filter_game_data(ndata)
 
     def filter_game_data(self, ndata):
         total_views = 0
@@ -391,9 +417,13 @@ class Steam(Resource):
         url =  'https://api.twitch.tv/helix/streams?game_id={}'.format(game_id)
 
         stream_data = requests.get(url, headers=TWITCH_HEADER)
-        ndata = stream_data.json()
-
-        return self.filter_stream_data(ndata)
+        status = stream_data.status_code
+        if status == 200:
+            ndata = stream_data.json()
+            return self.filter_stream_data(ndata)
+        else:
+            ndata = {}
+            return self.filter_stream_data(ndata)
 
     def filter_stream_data(self, ndata):
         filtered_data = []
@@ -409,27 +439,32 @@ class Steam(Resource):
     # Recebe uma url de uma imagem e retorna um array de dicionarios, onde cada
     # dicionario representa uma cor da paleta de cores da imagem
     def get_palette(self, img_url):
-        img = Image.open(requests.get(img_url, stream=True).raw)
-        palette = colorific.extract_colors(img)
-        array_colors = []
-        for color in palette.colors:
-            hex_value = colorific.rgb_to_hex(color.value)
-            dictionary_colors = {
-                'r': color.value[0],
-                'g': color.value[1],
-                'b': color.value[2],
-                'hex': hex_value
-            }
-            array_colors.append(dictionary_colors)
-        if palette.bgcolor is not None:
-            hex_value = colorific.rgb_to_hex(palette.bgcolor.value)
-            dictionary_colors = {
-                'r': palette.bgcolor.value[0],
-                'g': palette.bgcolor.value[1],
-                'b': palette.bgcolor.value[2],
-                'hex': hex_value
-            }
-            array_colors.append(dictionary_colors)
+        request = requests.get(img_url, stream=True)
+        status = request.status_code
+        if status == 200:
+            img = Image.open(request.raw)
+            palette = colorific.extract_colors(img)
+            array_colors = []
+            for color in palette.colors:
+                hex_value = colorific.rgb_to_hex(color.value)
+                dictionary_colors = {
+                    'r': color.value[0],
+                    'g': color.value[1],
+                    'b': color.value[2],
+                    'hex': hex_value
+                }
+                array_colors.append(dictionary_colors)
+            if palette.bgcolor is not None:
+                hex_value = colorific.rgb_to_hex(palette.bgcolor.value)
+                dictionary_colors = {
+                    'r': palette.bgcolor.value[0],
+                    'g': palette.bgcolor.value[1],
+                    'b': palette.bgcolor.value[2],
+                    'hex': hex_value
+                }
+                array_colors.append(dictionary_colors)
+        else:
+            array_colors = []
 
         return array_colors
 
@@ -459,8 +494,12 @@ class Steam(Resource):
 # >>>>>>>>>>>>>>>>>> MERGE SECTION <<<<<<<<<<<<<<<<<<<<<<
 
     def merge_data(self, steam_game, youtube_game, twitch_game):
-        return {
-            # Dados Steam
+        array = []
+        # Dados Steam
+        if (len(steam_game) == 0):
+            return array
+        else:
+            steam_dictionary = {
             'id_steam': steam_game['id'],
             'name': steam_game['name'],
             'positive_reviews_steam': steam_game['positive_reviews_steam'],
@@ -469,21 +508,49 @@ class Steam(Resource):
             'average_forever': steam_game['average_forever'],
             'average_2weeks': steam_game['average_2weeks'],
             'price': steam_game['price'],
-            'languages': steam_game['languages'],
-            'genres': steam_game['genres'],
+            'language': steam_game['language'],
+            'genre': steam_game['genre'],
             'main_image': steam_game['main_image'],
             'screenshots': steam_game['screenshots'],
             'release_date': steam_game['release_date'],
             'r_average': steam_game['r_average'],
             'g_average': steam_game['g_average'],
-            'b_average': steam_game['b_average'],
-            # Dados Youtube
+            'b_average': steam_game['b_average']
+            }
+
+        # Dados Youtube
+        if (len(youtube_game) == 0):
+            youtube_dictionary = {
+            'count_videos': None,
+            'count_views': None,
+            'count_likes': None,
+            'count_dislikes': None,
+            'count_comments': None
+            }
+        else:
+            youtube_dictionary = {
             'count_videos': youtube_game['count_videos'],
             'count_views': youtube_game['count_views'],
             'count_likes': youtube_game['count_likes'],
             'count_dislikes': youtube_game['count_dislikes'],
-            'count_comments': youtube_game['count_comments'],
-            # Dados Twitch
+            'count_comments': youtube_game['count_comments']
+            }
+
+        # Dados Twitch
+        if (len(twitch_game) == 0):
+            twitch_dictionary = {
+            'total_views': None,
+            'streams': None
+            }
+        else:
+            twitch_dictionary = {
             'total_views': twitch_game['total_views'],
             'streams': twitch_game['streams']
-        }
+            }
+
+        merge_dictionary = {}
+        merge_dictionary.update(steam_dictionary)
+        merge_dictionary.update(youtube_dictionary)
+        merge_dictionary.update(twitch_dictionary)
+
+        return merge_dictionary
