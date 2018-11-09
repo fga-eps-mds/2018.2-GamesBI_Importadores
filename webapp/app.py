@@ -1,6 +1,6 @@
 from flask import Blueprint, Flask
 from flask_restful import Api
-from resources.Steam import Steam
+from resources.Importer import Importer
 
 import os
 
@@ -8,12 +8,12 @@ api_bp = Blueprint('api', __name__)
 api = Api(api_bp)
 
 # Route
-api.add_resource(Steam, '/steam')
+api.add_resource(Importer, '/importer')
 
 def create_app(config_filename):
     app = Flask(__name__)
     app.config.from_object(config_filename)
-    
+
     from app import api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
 
