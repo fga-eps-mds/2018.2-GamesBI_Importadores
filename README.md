@@ -12,13 +12,6 @@ Before anything, you need to install [docker](https://docs.docker.com/install/) 
 
 It's as easy as:
 
-Running migrations
-```bash
-$ make migrations
-$ make migrate
-```
-And then
-
 ```bash
 $ make up
 ```
