@@ -16,7 +16,7 @@ class Twich(object):
         status = game_data.status_code
         if status == 200:
             ndata = game_data.json()
-            return self.filter_game_data(ndata['data'][0])
+            return self.filter_game_data(ndata)
         else:
             return {
                 'total_views': None,
@@ -25,11 +25,15 @@ class Twich(object):
 
     def filter_game_data(self, ndata):
         total_views = 0
-        game_id = None;
-        if 'id' in ndata:
-            game_id = ndata['id']
+        streams = []
+        if 'data' in ndata:
+            data = ndata['data']
+            game_id = None
+            for info in data:
+                if 'id' in info:
+                    game_id = info['id']
+            streams = self.get_streams(game_id)
 
-        streams = self.get_streams(game_id)
         total_views = 0
         if len(streams) != 0:
             total_views = reduce(operator.add, [x['viewer_count'] if x['viewer_count'] != None else 0 for x in streams])
