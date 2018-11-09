@@ -19,8 +19,8 @@ class Youtube(object):
         }
         for id in array_ids_youtube_game:
             video_data = self.get_video_youtube_data(id)
-            print("Requisitando video com ID: {}".format(id))
-            print("-------------------------------------------------")
+            # print("Requisitando video com ID: {}".format(id))
+            # print("-------------------------------------------------")
             dictionary_game['count_views'] += video_data['count_views']
             dictionary_game['count_likes'] += video_data['count_likes']
             dictionary_game['count_dislikes'] += video_data['count_dislikes']

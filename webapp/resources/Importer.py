@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from . import Youtube, Twitch, Steam
-
+import requests
+import sys
 
 class Importer(Resource):
 
