@@ -84,7 +84,6 @@ class Steam(object):
                     'b_average': additional_information['b_average']
                 }
                 select_games.append(filtered_data)
-
         return select_games
 
     def get_infos_game_steam(self, game_id):
