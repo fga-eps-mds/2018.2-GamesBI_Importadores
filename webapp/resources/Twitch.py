@@ -20,7 +20,7 @@ class Twich(object):
         else:
             return {
                 'total_views': None,
-                'streams': None
+                'streams': []
             }
 
     def filter_game_data(self, ndata):
@@ -44,7 +44,7 @@ class Twich(object):
         else:
             return {
                 'total_views': None,
-                'streams': None
+                'streams': []
             }
 
     def get_streams(self, game_id):
