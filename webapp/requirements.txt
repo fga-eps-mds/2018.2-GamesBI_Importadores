@@ -1,4 +1,0 @@
-flask==0.12.2
-flask_restful==0.3.6
-requests
-colorific

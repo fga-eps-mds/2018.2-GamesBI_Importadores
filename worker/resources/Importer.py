@@ -1,9 +1,8 @@
-from flask_restful import Resource
 from . import Youtube, Twitch, Steam
 import sys
 # import requests
 
-class Importer(Resource):
+class Importer():
 
     def get(self):
         array_post = []
