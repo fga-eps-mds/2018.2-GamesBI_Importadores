@@ -12,7 +12,7 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localho
 CELERY_BEAT_SCHEDULE = {
     'import_data': {
         'task': 'tasks.import',
-        'schedule': crontab('0', '1', '*', '*', '*')
+        'schedule': crontab(os.environ.get('CELERY_MIN'), os.environ.get('CELERY_HOUR'), '*', '*', '*')
     }
 }
 
