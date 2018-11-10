@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from . import Youtube, Twitch, Steam
 import sys
+# import requests
 
 class Importer(Resource):
 
@@ -16,6 +17,7 @@ class Importer(Resource):
             game_twitch = twitch.get_twitch_data(game_steam['name'])
             dictionary_game = self.merge_data(game_steam, game_youtube, game_twitch)
             array_post.append(dictionary_game)
+            # requests.post("http://web:8000/api/", json=array_post)
 
         return array_post
 

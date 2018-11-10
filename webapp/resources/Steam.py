@@ -180,16 +180,27 @@ class Steam(object):
                 else:
                     b_average = None
 
-            return {
-                'r_average': r_average,
-                'g_average': g_average,
-                'b_average': b_average,
-                'main_image': main_image,
-                'languages': languages,
-                'genres': genres,
-                'screenshots': list_screenshots,
-                'release_date': release_date
-            }
+                return {
+                    'r_average': r_average,
+                    'g_average': g_average,
+                    'b_average': b_average,
+                    'main_image': main_image,
+                    'languages': languages,
+                    'genres': genres,
+                    'screenshots': list_screenshots,
+                    'release_date': release_date
+                }
+            else:
+                return {
+                    'r_average': None,
+                    'g_average': None,
+                    'b_average': None,
+                    'main_image': None,
+                    'languages': [],
+                    'genres': [],
+                    'screenshots': [],
+                    'release_date': None
+                }
 
     # Valida se aquele jogo tem uma quantidade mínima de owners
     def valid_game(self, game):
