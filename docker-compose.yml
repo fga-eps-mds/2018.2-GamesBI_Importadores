@@ -1,24 +1,18 @@
 version: '3.5'
 
 services:
-  import:
-    build: .
-    volumes:
-      - ./webapp:/opt/webapp
-    ports:
-      - "5000:5000"
-    networks:
-      - proxynet
-    env_file:
-      - .env
   worker:
     build:
-      context: celery-queue
+      context: worker
       dockerfile: Dockerfile
     networks:
       - proxynet
     depends_on:
       - redis
+    env_file:
+      - .env
+    volumes:
+      - ./worker:/queue
   redis:
     image: redis
     networks:
