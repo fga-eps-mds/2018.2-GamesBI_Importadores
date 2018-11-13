@@ -2,6 +2,7 @@ from . import Youtube, Twitch, Steam
 import sys
 # import requests
 
+
 class Importer():
 
     def get(self):
@@ -11,10 +12,12 @@ class Importer():
         twitch = Twitch.Twich()
         array_steam_data = steam.get_steam_data()
         for game_steam in array_steam_data:
-            print('Nome do jogo: {}'.format(game_steam['name']), file=sys.stdout)
+            print('Nome do jogo: {}'.format(
+                game_steam['name']), file=sys.stdout)
             game_youtube = youtube.get_youtube_data(game_steam['name'])
             game_twitch = twitch.get_twitch_data(game_steam['name'])
-            dictionary_game = self.merge_data(game_steam, game_youtube, game_twitch)
+            dictionary_game = self.merge_data(
+                game_steam, game_youtube, game_twitch)
             array_post.append(dictionary_game)
             # requests.post("http://web:8000/api/", json=array_post)
 

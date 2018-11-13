@@ -77,7 +77,8 @@ class Youtube(object):
     def get_video_youtube_data(self, id_video):
         header = {'Accept': 'application/json'}
         key = 'AIzaSyDmDXP_gaB7cog4f0slbbdJ3RACsY5WQIw'
-        url = 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id={}&key={}'.format(id_video, key)
+        url = 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id={}&key={}'.format(
+            id_video, key)
         request = requests.get(url, headers=header)
         status = request.status_code
         if status == 200:

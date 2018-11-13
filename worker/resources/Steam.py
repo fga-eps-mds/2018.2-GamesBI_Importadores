@@ -87,7 +87,8 @@ class Steam(object):
         return select_games
 
     def get_infos_game_steam(self, game_id):
-        url = 'https://store.steampowered.com/api/appdetails?appids={}'.format(game_id)
+        url = 'https://store.steampowered.com/api/appdetails?appids={}'.format(
+            game_id)
         header = {'Accept': 'application/json'}
         request = requests.get(url, headers=header)
         status = request.status_code
