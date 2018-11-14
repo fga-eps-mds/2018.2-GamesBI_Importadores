@@ -28,12 +28,14 @@ class Steam(object):
                 if count >= STEAM_GAMES_LIMIT:
                     break
                 keys = ['appid', 'name', 'positive', 'negative', 'owners',
-                'average_forever', 'average_2weeks', 'price']
+                        'average_forever', 'average_2weeks', 'price']
 
                 filtered_data.append(
                     {key: game[key] if key in game else None for key in keys})
+
                 additional_information = self.get_infos_game_steam(
-                    filtered_data[count]['appid'])
+                    filtered_data[count]['appid']
+                )
                 filtered_data[count].update(additional_information)
                 count += 1
         return filtered_data
@@ -63,97 +65,97 @@ class Steam(object):
         for game in game_data.values():
             if 'data' in game:
                 data = game["data"]
+                keys = ['header_image', 'release_date']
+                dict_simple_fields = {
+                    key: data[key] if key in data else [] for key in keys
+                }
+                dict_simple_fields['release_date'] = self.get_release_date(
+                    dict_simple_fields['release_date']
+                )
 
-                if 'header_image' in data:
-                    main_image = data['header_image']
-                else:
-                    main_image = None
+                keys_array = ['supported_languages', 'genres', 'screenshots']
+                dict_array_fields = {
+                    key: data[key] if key in data else [] for key in keys_array
+                }
+                dict_array_fields['supported_languages'] = self.get_languages(
+                    dict_array_fields['supported_languages']
+                )
+                dict_array_fields['genres'] = self.get_genres(
+                    dict_array_fields['genres']
+                )
+                dict_array_fields['screenshots'] = self.get_screenshots(
+                    dict_array_fields['screenshots']
+                )
 
-                if 'supported_languages' in data:
-                    array_languages = data['supported_languages'].split(', ')
-                    languages = []
-                    for language in array_languages:
-                        strong = True if '<strong>' in language else False
-                        if strong:
-                            languages.append(language.split('<')[0])
-                        else:
-                            languages.append(language)
-                else:
-                    languages = []
+                pallete_game = self.get_pallete_game(
+                    dict_array_fields['screenshots']
+                )
+                keys_pallets = ['r', 'g', 'b']
+                dict_pallet_fields = {
+                    key: pallete_game[key] if key in pallete_game else
+                    None for key in keys_pallets
+                }
+                dict_result = {}
+                dict_result.update(dict_simple_fields)
+                dict_result.update(dict_array_fields)
+                dict_result.update(dict_pallet_fields)
+                return dict_result
+        return {
+            'r_average': None,
+            'g_average': None,
+            'b_average': None,
+            'main_image': None,
+            'supported_languages': [],
+            'genres': [],
+            'screenshots': [],
+            'release_date': None
+        }
 
-                if 'genres' in data:
-                    genres = []
-                    array_genres = data["genres"]
-                    for genre in array_genres:
-                        if 'description' in genre:
-                            genres.append(genre['description'])
-                else:
-                    genres = []
+    def get_release_date(self, dict_date):
+        if 'date' in dict_date:
+            return dict_date['date']
+        else:
+            return None
 
-                list_screenshots = []
-                if 'screenshots' in data:
-                    list_pallets = []
-                    for screenshot in data['screenshots']:
-                        if 'path_thumbnail' in screenshot:
-                            url = screenshot['path_thumbnail']
-                            pallete = self.get_palette(url)
-                            list_pallets.append(pallete)
-                            dictionary_screenshot = {
-                                'url': url,
-                                'palette': pallete
-                            }
-                        else:
-                            dictionary_screenshot = None
-                        list_screenshots.append(dictionary_screenshot)
-                    pallete_game = self.get_average_pallets(list_pallets)
-                else:
-                    pallete_game = []
+    def get_languages(self, str_languages):
+        languages = []
+        array_languages = str_languages.split(', ')
+        for language in array_languages:
+            strong = True if '<strong>' in language else False
+            if strong:
+                correct_format_language = language.split('<')[0]
+                languages.append(correct_format_language)
+            else:
+                languages.append(language)
+        return languages
 
-                if 'release_date' in data:
-                    release = data['release_date']
-                    if 'date' in release:
-                        release_date = release['date']
-                    else:
-                        release_date = None
-                else:
-                    release_date = None
+    def get_genres(self, genres):
+        array_genres = []
+        for genre in genres:
+            if 'description' in genre:
+                array_genres.append(genre['description'])
+        return array_genres
 
-                if 'r' in pallete_game:
-                    r_average = pallete_game['r']
-                else:
-                    r_average = None
-
-                if 'g' in pallete_game:
-                    g_average = pallete_game['g']
-                else:
-                    g_average = None
-
-                if 'b' in pallete_game:
-                    b_average = pallete_game['b']
-                else:
-                    b_average = None
-
-                return {
-                    'r_average': r_average,
-                    'g_average': g_average,
-                    'b_average': b_average,
-                    'main_image': main_image,
-                    'languages': languages,
-                    'genres': genres,
-                    'screenshots': list_screenshots,
-                    'release_date': release_date
+    def get_screenshots(self, screenshots):
+        list_screenshots = []
+        for screenshot in screenshots:
+            if 'path_thumbnail' in screenshot:
+                url = screenshot['path_thumbnail']
+                pallete = self.get_palette(url)
+                dictionary_screenshot = {
+                    'url': url,
+                    'palette': pallete
                 }
             else:
-                return {
-                    'r_average': None,
-                    'g_average': None,
-                    'b_average': None,
-                    'main_image': None,
-                    'languages': [],
-                    'genres': [],
-                    'screenshots': [],
-                    'release_date': None
-                }
+                dictionary_screenshot = None
+            list_screenshots.append(dictionary_screenshot)
+        return list_screenshots
+
+    def get_pallete_game(self, screenshots):
+        palletes = []
+        for screenshot in screenshots:
+            palletes.append(screenshot['palette'])
+        return self.get_average_pallets(palletes)
 
     def valid_game(self, game):
         if 'owners' in game:
