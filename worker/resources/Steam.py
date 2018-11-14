@@ -9,8 +9,6 @@ STEAM_GAMES_LIMIT = int(os.environ['STEAM_GAMES_LIMIT'])
 
 class Steam(object):
 
-    # Requisita todos os jogos da steam e retorna
-    # um array com jogos selecionado
     def get_steam_data(self):
         url = 'http://steamspy.com/api.php?request=all'
         header = {'Accept': 'application/json'}
@@ -22,69 +20,23 @@ class Steam(object):
         else:
             return []
 
-    # Filtra os dados da steam e retorna um array com jogos selecionados
     def filter_steam_games(self, games_data):
-        select_games = []
         count = 0
+        filtered_data = []
         for game in games_data.values():
             if self.valid_game(game):
                 if count >= STEAM_GAMES_LIMIT:
                     break
+                keys = ['appid', 'name', 'positive', 'negative', 'owners',
+                'average_forever', 'average_2weeks', 'price']
+
+                filtered_data.append(
+                    {key: game[key] if key in game else None for key in keys})
+                additional_information = self.get_infos_game_steam(
+                    filtered_data[count]['appid'])
+                filtered_data[count].update(additional_information)
                 count += 1
-                if 'appid' in game:
-                    id = game['appid']
-                else:
-                    id = None
-                if 'name' in game:
-                    name = game['name']
-                else:
-                    name = None
-                if 'positive' in game:
-                    positive = game['positive']
-                else:
-                    positive = None
-                if 'negative' in game:
-                    negative = game['negative']
-                else:
-                    negative = None
-                if 'owners' in game:
-                    owners_str = game['owners']
-                    owners = self.read_owners(owners_str)
-                else:
-                    owners_str = None
-                if 'average_forever' in game:
-                    average_forever = game['average_forever']
-                else:
-                    average_forever = None
-                if 'average_2weeks' in game:
-                    average_2weeks = game['average_2weeks']
-                else:
-                    average_2weeks = None
-                if 'price' in game:
-                    price = game['price']
-                else:
-                    price = None
-                additional_information = self.get_infos_game_steam(id)
-                filtered_data = {
-                    'id': id,
-                    'name': name,
-                    'positive_reviews_steam': positive,
-                    'negative_reviews_steam': negative,
-                    'owners': owners,
-                    'average_forever': average_forever,
-                    'average_2weeks': average_2weeks,
-                    'price': price,
-                    'main_image': additional_information['main_image'],
-                    'languages': additional_information['languages'],
-                    'genres': additional_information['genres'],
-                    'release_date': additional_information['release_date'],
-                    'screenshots': additional_information['screenshots'],
-                    'r_average': additional_information['r_average'],
-                    'g_average': additional_information['g_average'],
-                    'b_average': additional_information['b_average']
-                }
-                select_games.append(filtered_data)
-        return select_games
+        return filtered_data
 
     def get_infos_game_steam(self, game_id):
         url = 'https://store.steampowered.com/api/appdetails?appids={}'.format(
@@ -203,7 +155,6 @@ class Steam(object):
                     'release_date': None
                 }
 
-    # Valida se aquele jogo tem uma quantidade mínima de owners
     def valid_game(self, game):
         if 'owners' in game:
             owners_str = game['owners']
@@ -215,14 +166,11 @@ class Steam(object):
         else:
             return False
 
-    # Recebe uma string de owners e retorna a média entra elas
     def read_owners(self, str_owners):
         vector_numbers = self.valid_owners(str_owners)
         average = self.calculates_avarege(vector_numbers)
         return average
 
-    # Recebe uma string de owners, as separa em dois
-    # inteiros e retorna a media entra elas
     def valid_owners(self, str_owners):
         low_average = str_owners.split(" .. ")[0]
         high_average = str_owners.split(" .. ")[1]
@@ -240,15 +188,12 @@ class Steam(object):
         high_average_int = int(high_average_valid)
         return [low_average_int, high_average_int]
 
-    # Recebe um array de numeros e retorna a media entre eles
     def calculates_avarege(self, numbers):
         sum = 0
         for number in numbers:
             sum = sum + number
         return sum / len(numbers)
 
-    # Recebe uma url de uma imagem e retorna um array de dicionarios, onde cada
-    # dicionario representa uma cor da paleta de cores da imagem
     def get_palette(self, img_url):
         request = requests.get(img_url, stream=True)
         status = request.status_code
@@ -276,11 +221,8 @@ class Steam(object):
                 array_colors.append(dictionary_colors)
         else:
             array_colors = []
-
         return array_colors
 
-    # Recebe um array de arrays retornardos pela funcao get_pallete
-    # e retorna um dicionario com a média de cores do jogo
     def get_average_pallets(self, array_photos):
         rgb_average = {
             'r': 0,
