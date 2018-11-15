@@ -50,16 +50,7 @@ class Steam(object):
             data = request.json()
             return self.filter_infos_game_steam(data)
         else:
-            return {
-                'r_average': None,
-                'g_average': None,
-                'b_average': None,
-                'main_image': None,
-                'languages': [],
-                'genres': [],
-                'screenshots': [],
-                'release_date': None
-            }
+            return self.get_empty_dict_data()
 
     def filter_infos_game_steam(self, game_data):
         for game in game_data.values():
@@ -100,11 +91,14 @@ class Steam(object):
                 dict_result.update(dict_array_fields)
                 dict_result.update(dict_pallet_fields)
                 return dict_result
+        return self.get_empty_dict_data()
+
+    def get_empty_dict_data(self):
         return {
-            'r_average': None,
-            'g_average': None,
-            'b_average': None,
-            'main_image': None,
+            'r': None,
+            'g': None,
+            'b': None,
+            'header_image': None,
             'supported_languages': [],
             'genres': [],
             'screenshots': [],
@@ -179,12 +173,12 @@ class Steam(object):
         low_average_valid = ""
         for number in low_average:
             if number != ",":
-                low_average_valid = low_average_valid + number
+                low_average_valid += number
 
         high_average_valid = ""
         for number in high_average:
             if number != ",":
-                high_average_valid = high_average_valid + number
+                high_average_valid += number
 
         low_average_int = int(low_average_valid)
         high_average_int = int(high_average_valid)
@@ -234,14 +228,14 @@ class Steam(object):
         qtd_pallets = 0
         for photo in array_photos:
             for palette in photo:
-                rgb_average['r'] = rgb_average['r'] + palette['r']
-                rgb_average['g'] = rgb_average['g'] + palette['g']
-                rgb_average['b'] = rgb_average['b'] + palette['b']
+                rgb_average['r'] += palette['r']
+                rgb_average['g'] += palette['g']
+                rgb_average['b'] += palette['b']
                 qtd_pallets += 1
         if qtd_pallets > 0:
             rgb_average['r'] = int(rgb_average['r'] / qtd_pallets)
-            rgb_average['g'] = int(rgb_average['g'] / qtd_pallets)
-            rgb_average['b'] = int(rgb_average['b'] / qtd_pallets)
+            rgb_average['g'] = int(rgb_average['r'] / qtd_pallets)
+            rgb_average['b'] = int(rgb_average['r'] / qtd_pallets)
             return rgb_average
         else:
             return []

@@ -1,5 +1,6 @@
 import requests
 import os
+import operator
 
 YOUTUBE_VIDEOS_LIMIT = int(os.environ['YOUTUBE_VIDEOS_LIMIT'])
 
@@ -19,13 +20,11 @@ class Youtube(object):
         }
         for id in array_ids_youtube_game:
             video_data = self.get_video_youtube_data(id)
-            # print("Requisitando video com ID: {}".format(id))
-            # print("-------------------------------------------------")
-            dictionary_game['count_views'] += video_data['count_views']
-            dictionary_game['count_likes'] += video_data['count_likes']
-            dictionary_game['count_dislikes'] += video_data['count_dislikes']
-            dictionary_game['count_favorites'] += video_data['count_favorites']
-            dictionary_game['count_comments'] += video_data['count_comments']
+            dictionary_game['count_views'] += video_data['viewCount']
+            dictionary_game['count_likes'] += video_data['likeCount']
+            dictionary_game['count_dislikes'] += video_data['dislikeCount']
+            dictionary_game['count_favorites'] += video_data['favoriteCount']
+            dictionary_game['count_comments'] += video_data['commentCount']
 
         if len(array_ids_youtube_game) == 0:
             return {
@@ -60,16 +59,18 @@ class Youtube(object):
 
     # Retorna um array com todos os ID's de videos relacionados a um jogo
     def filter_ids_youtube_game(self, youtube_results):
-        items = []
         if 'items' in youtube_results:
             items = youtube_results['items']
+        else:
+            items = []
 
         list_id = []
         for item in items:
             if 'id' in item:
-                if 'videoId' in item['id']:
-                    id = item['id']['videoId']
-                    list_id.append(id)
+                dict_id = item['id']
+                if 'videoId' in dict_id:
+                    video_id = dict_id['videoId']
+                    list_id.append(video_id)
         return list_id
 
     # Requisita as informações de um video do youtube
@@ -85,47 +86,29 @@ class Youtube(object):
             data = request.json()
             return self.filter_video_youtube_gama(data)
         else:
-            return {
-                'count_views': 0,
-                'count_likes': 0,
-                'count_dislikes': 0,
-                'count_favorites': 0,
-                'count_comments': 0
-            }
+            return self.get_empty_dict_data()
 
     # Filtra os dados de um video do youtube
     # e retorna um objeto com esses dados
     def filter_video_youtube_gama(self, video_data):
-        count_views = 0
-        count_likes = 0
-        count_dislikes = 0
-        count_favorites = 0
-        count_comments = 0
         if 'items' in video_data:
             items = video_data['items']
             for item in items:
                 if 'statistics' in item:
                     statistics = item['statistics']
-                    if 'viewCount' in statistics:
-                        count_views = statistics['viewCount']
+                    keys = ['viewCount', 'likeCount', 'dislikeCount',
+                            'favoriteCount', 'commentCount']
+                    dict_data = {
+                        key: int(statistics[key]) if key in statistics else 0 for key in keys
+                    }
+                    return dict_data
+        return self.get_empty_dict_data()
 
-                    if 'likeCount' in statistics:
-                        count_likes = statistics['likeCount']
-
-                    if 'dislikeCount' in statistics:
-                        count_dislikes = statistics['dislikeCount']
-
-                    if 'favoriteCount' in statistics:
-                        count_favorites = statistics['favoriteCount']
-
-                    if 'commentCount' in statistics:
-                        count_comments = statistics['commentCount']
-
-        filtered_data_video = {
-            'count_views': int(count_views),
-            'count_likes': int(count_likes),
-            'count_dislikes': int(count_dislikes),
-            'count_favorites': int(count_favorites),
-            'count_comments': int(count_comments)
+    def get_empty_dict_data(self):
+        return {
+            'viewCount': None,
+            'likeCount': None,
+            'dislikeCount': None,
+            'favoriteCount': None,
+            'commentCount': None
         }
-        return filtered_data_video
