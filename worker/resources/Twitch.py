@@ -7,7 +7,7 @@ import time
 TWITCH_HEADER = {'Client-ID': 'nhnlqt9mgdmkf9ls184tt1nd753472', 'Accept': 'application/json'}
 
 
-class Twich(object):
+class Twitch(object):
 
     def get_twitch_data(self, game_name):
         url = 'https://api.twitch.tv/helix/games?name={}'.format(quote(game_name))
