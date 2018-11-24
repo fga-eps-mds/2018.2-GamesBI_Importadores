@@ -17,7 +17,7 @@ deploy:
   - provider: heroku
     api_key:
       secure: ${HEROKU_KEY}
-    app: gbi-importadores-staging
+    app: gbi-importadores2-staging
     on:
       repo: fga-eps-mds/2018.2-GamesBI_Importadores
       branch: develop
@@ -25,7 +25,7 @@ deploy:
   - provider: heroku
     api_key:
       secure: ${HEROKU_KEY}
-    app: gbi-importadores-production
+    app: gbi-importadores2-production
     on:
       repo: fga-eps-mds/2018.2-GamesBI_Importadores
       branch: master
