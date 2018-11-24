@@ -1,9 +1,6 @@
-from Youtube import Youtube
-from Twitch import Twitch
-from Steam import Steam
-from Importer import Importer
 import unittest
 import requests_mock
+from . import Youtube, Twitch, Steam
 
 
 class TestImporter(unittest.TestCase):
@@ -16,110 +13,160 @@ class TestImporter(unittest.TestCase):
 		self.twitch = Twitch()
 		self.importer = Importer()
 
-		url_steam = 'http://steamspy.com/api.php?request=all'
-		url_steam2 = 'https://store.steampowered.com/api/appdetails?appids=730'
 
-		url_youtube = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=Counter-Strike&q=50GAMEPLAY&key=AIzaSyDmDXP_gaB7cog4f0slbbdJ3RACsY5WQIw'
-		url_youtube2 = 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id=15454&key=AIzaSyDmDXP_gaB7cog4f0slbbdJ3RACsY5WQIw\'
+		key = 'AIzaSyDmDXP_gaB7cog4f0slbbdJ3RACsY5WQIw'
+		game_name = 'PUBG'
+		YOUTUBE_VIDEOS_LIMIT = 2
+		url_youtube_id = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults={}&q={}GAMEPLAY&key={}'.format(
+			YOUTUBE_VIDEOS_LIMIT,
+			game_name,
+			key,
+		)
 
-		data_steam = {
-			"730":{
-				"appid":730,
-				"name":"Counter-Strike: Global Offensive",
-				"developer":"Valve",
-				"publisher":"Valve",
-				"score_rank":72,
-				"positive":2435010,
-				"negative":314329,
-				"userscore":88,
-				"owners":"20,000,000 .. 50,000,000",
-				"average_forever":33061,
-				"average_2weeks":988,
-				"median_forever":15008,
-				"median_2weeks":405,
-				"price":"1499",
-				"initialprice":"1499",
-				"discount":"0"
-			}
-						}
 
-		data_steam2 = [
-			{
-				"id_steam": 123,
-				"name": "Test 1",
-				"positive_reviews_steam": 1923123,
-				"negative_reviews_steam": 12121,
-				"owners": 130000,
-				"average_forever": 2127,
-				"average_2weeks": 132,
-				"price": "0",
-				"languages": [
-					"mandarim", "espanhol"
-				],
-				"genres": [
-					"tiro", "porrada"
-				],
-				"main_image": "google.com",
-				"screenshots": [
-					{
-						"url": "https://steamcdn-a.akamaihd.net/steam/apps/570/ss_86d675fdc73ba10462abb8f5ece7791c5047072c.600x338.jpg?t=1536248487",
-						"palette": [
-							{
-								"r": 8,
-								"g": 16,
-								"b": 2,
-								"hex": "#1aa741"
-							},
-							{
-								"r": 34,
-								"g": 12,
-								"b": 37,
-								"hex": "#2e204d"
-							},
-							{
-								"r": 22,
-								"g": 48,
-								"b": 34,
-								"hex": "#484454"
-							},
-							{
-								"r": 121,
-								"g": 80,
-								"b": 254,
-								"hex": "#b5b49a"
-							},
-							{
-								"r": 19,
-								"g": 26,
-								"b": 21,
-								"hex": "#3b4233"
-							}
-						]
-					},
-				],
-				"release_date": "1 Feb, 1999",
-				"r_average": 83,
-				"g_average": 82,
-				"b_average": 74,
-			},
-		]
+		data_youtube_id = {
+			 "kind": "youtube#searchListResponse",
+			 "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/bLIY-CLkCHsD4COq-IahYya7RqU\"",
+			 "nextPageToken": "CAIQAA",
+			 "regionCode": "BR",
+			 "pageInfo": {
+			  "totalResults": 687169,
+			  "resultsPerPage": 2
+			 },
+			 "items": [
+			  {
+			   "kind": "youtube#searchResult",
+			   "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/FPBk8_z5Bk7Bt4lYzxqVCqV_X14\"",
+			   "id": {
+			    "kind": "youtube#video",
+			    "videoId": "sctOYN2pMs4"
+			   },
+			   "snippet": {
+			    "publishedAt": "2017-12-23T23:00:03.000Z",
+			    "channelId": "UCIw5rbXUrtk31t20Ap5817w",
+			    "title": "PlayerUnknown's Battlegrounds (PUBG) Gameplay (PC HD) [1080p60FPS]",
+			    "description": "PlayerUnknown's Battlegrounds (PUBG) Gameplay (PC HD) [1080p60FPS] Steam Page ...",
+			    "thumbnails": {
+			     "default": {
+			      "url": "https://i.ytimg.com/vi/sctOYN2pMs4/default.jpg",
+			      "width": 120,
+			      "height": 90
+			     },
+			     "medium": {
+			      "url": "https://i.ytimg.com/vi/sctOYN2pMs4/mqdefault.jpg",
+			      "width": 320,
+			      "height": 180
+			     },
+			     "high": {
+			      "url": "https://i.ytimg.com/vi/sctOYN2pMs4/hqdefault.jpg",
+			      "width": 480,
+			      "height": 360
+			     }
+			    },
+			    "channelTitle": "Throneful",
+			    "liveBroadcastContent": "none"
+			   }
+			  },
+			  {
+			   "kind": "youtube#searchResult",
+			   "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/tcJh9o972j5pkb_sUa2AK9bWQ_c\"",
+			   "id": {
+			    "kind": "youtube#video",
+			    "videoId": "y5i-NqrNvaM"
+			   },
+			   "snippet": {
+			    "publishedAt": "2018-06-27T21:16:12.000Z",
+			    "channelId": "UCN-v-Xn9S7oYk0X2v1jx1Qg",
+			    "title": "SOLO SAVAGE - PUBG Gameplay SOLO FPP New Map",
+			    "description": "Finally played some solos on the new PUBG update and new map (Sanhok, aka \"Savage\")! More gameplays coming soon to my second channel: ...",
+			    "thumbnails": {
+			     "default": {
+			      "url": "https://i.ytimg.com/vi/y5i-NqrNvaM/default.jpg",
+			      "width": 120,
+			      "height": 90
+			     },
+			     "medium": {
+			      "url": "https://i.ytimg.com/vi/y5i-NqrNvaM/mqdefault.jpg",
+			      "width": 320,
+			      "height": 180
+			     },
+			     "high": {
+			      "url": "https://i.ytimg.com/vi/y5i-NqrNvaM/hqdefault.jpg",
+			      "width": 480,
+			      "height": 360
+			     }
+			    },
+			    "channelTitle": "StoneMountain64",
+			    "liveBroadcastContent": "none"
+			   }
+			  }
+			 ]
+		}
 
-		data_youtube = 'item':[
-								'id':[
-										'videoId' : 15454
-									]
-							]
-		data_youtube2 = 'items':[
-			'statistics':{
-	            'count_views': '123',
-	            'count_likes': '1222',
-	            'count_dislikes': '323',
-	            'count_favorites': '3222',
-	            'count_comments': '32333'
-	        }
-		]
+		request_mock.get(url_youtube_id, json=data_youtube_id)
 
-		data_youtube3 = {
+
+	def test_requisicao_id_Yotube(self):
+
+		response = self.youtube.get_ids_youtube_game(self, game_name)
+		self.assertNotEqual(len(response), 0)
+
+	@requests_mock.Mocker()
+	def test_requisicao_video_Yotube(self, request_mock):
+		id_video1 = "sctOYN2pMs4"
+		id_video2 = "y5i-NqrNvaM"
+		url = 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id=={}&key={}'.format(id_video1, key)
+		url2 = 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id={}&key={}'.format(id_video2, key)
+
+		data_video1 = {
+		 "kind": "youtube#videoListResponse",
+		 "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/lKC5Xzvj3cHi0u0u2F4cBe9Irzs\"",
+		 "pageInfo": {
+		  "totalResults": 1,
+		  "resultsPerPage": 1
+		 },
+		 "items": [
+		  {
+		   "kind": "youtube#video",
+		   "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/oKzDIVkNP8fDr7WBj3_BQ1NzeHs\"",
+		   "id": "sctOYN2pMs4",
+		   "statistics": {
+		    "viewCount": "907581",
+		    "likeCount": "4067",
+		    "dislikeCount": "1352",
+		    "favoriteCount": "0",
+		    "commentCount": "466"
+		   }
+		  }
+		 ]
+		}
+		request_mock.get(url, json=data_video1)
+
+		data_video2 = {
+		 "kind": "youtube#videoListResponse",
+		 "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/W0vax7Wv9-3oO0UY9LIyL7zRqRc\"",
+		 "pageInfo": {
+		  "totalResults": 1,
+		  "resultsPerPage": 1
+		 },
+		 "items": [
+		  {
+		   "kind": "youtube#video",
+		   "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/hkFkADlY2L0pqmzl8whDsZT-Y48\"",
+		   "id": "y5i-NqrNvaM",
+		   "statistics": {
+		    "viewCount": "351464",
+		    "likeCount": "5045",
+		    "dislikeCount": "102",
+		    "favoriteCount": "0",
+		    "commentCount": "345"
+		   }
+		  }
+		 ]
+		}
+		request_mock.get(url2, json=data_video2)
+
+		data_None = {
 			'name': game_name,
 			'count_videos': None,
 			'count_views': None,
@@ -129,28 +176,11 @@ class TestImporter(unittest.TestCase):
 			'count_comments': None
 		}
 
-		request_mock.get(url_steam, json=data_steam)
-		request_mock.get(url_steam2, json=data_steam2)
+		array_ids_youtube = self.youtube.get_ids_youtube_game(self, game_name)
+		for id in array_ids_youtube:
+			video_data = self.youtube.get_video_youtube_data(id)
+			self.assertNotEqual(video_data, data_None)
 
-		request_mock.get(url_youtube, json=data_youtube)
-		request_mock.get(url_youtube2, json=data_youtube2)
-
-	def test_status_code_Steam(self):
-		response = self.steam.get_steam_data()
-		self.assertNotEqual(len(response), 0)
-
-	def test_get_importadores(self):
-		response = self.import.get(self)
-		self.assertNotEqual(len(response), 0)
-
-
-	def test_requisicao_steam(self):
-
-		self.assertEqual(self.steam.get_steam_data(), data_steam2)
-
-	def test_requisicao_Yotube(self):
-
-		self.assertEqual(self.youtube.get_youtube_data(), data_youtube3)
 
 if __name__ == '__main__':
     unittest.main()
