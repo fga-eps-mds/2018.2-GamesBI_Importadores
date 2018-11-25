@@ -1,14 +1,13 @@
 import unittest
 import requests_mock
-from . import Youtube, Twitch, Steam
+from . import Youtube, Twitch
 
 
 class TestImporter(unittest.TestCase):
 
+	#Youtube
 	@requests_mock.Mocker()
 	def setUp(self, request_mock):
-		self.data_name = "Counter Strike"
-		self.steam = Steam.Steam()
 		self.youtube = Youtube.Youtube()
 		self.twitch = Twitch.Twitch()
 
@@ -105,6 +104,34 @@ class TestImporter(unittest.TestCase):
 		request_mock.get(url_youtube_id, json=data_youtube_id)
 
 
+		id_video = "y5i-NqrNvaM"
+		url = 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id={}&key={}'.format(id_video, key)
+
+		data_video = {
+		 "kind": "youtube#videoListResponse",
+		 "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/lKC5Xzvj3cHi0u0u2F4cBe9Irzs\"",
+		 "pageInfo": {
+		  "totalResults": 1,
+		  "resultsPerPage": 1
+		 },
+		 "items": [
+		  {
+		   "kind": "youtube#video",
+		   "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/oKzDIVkNP8fDr7WBj3_BQ1NzeHs\"",
+		   "id": "sctOYN2pMs4",
+		   "statistics": {
+			"viewCount": "944599",
+			"likeCount": "4485",
+			"dislikeCount": "1423",
+			"favoriteCount": "0",
+			"commentCount": "476"
+		   }
+		  }
+		 ]
+		}
+
+		request_mock.get(url, json=data_video)
+
 	def test_requisicao_id_Yotube(self):
 		game_name = 'PUBG'
 		response = self.youtube.get_ids_youtube_game(game_name)
@@ -153,6 +180,12 @@ class TestImporter(unittest.TestCase):
 
 		video_data = self.youtube.get_video_youtube_data(id_video)
 		self.assertEqual(video_data, data)
+
+	def test_requisicao_get_Yotube_data_not_NULL(self):
+
+		game_name = 'PUBG'
+		response = self.youtube.get_youtube_data(game_name)
+		self.assertNotEqual(response, None)
 
 if __name__ == '__main__':
     unittest.main()
