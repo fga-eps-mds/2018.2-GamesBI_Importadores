@@ -4,13 +4,15 @@ import operator
 from urllib.parse import quote
 import time
 
-TWITCH_HEADER = {'Client-ID': 'nhnlqt9mgdmkf9ls184tt1nd753472', 'Accept': 'application/json'}
+TWITCH_HEADER = {'Client-ID': 'nhnlqt9mgdmkf9ls184tt1nd753472',
+                 'Accept': 'application/json'}
 
 
 class Twitch(object):
 
     def get_twitch_data(self, game_name):
-        url = 'https://api.twitch.tv/helix/games?name={}'.format(quote(game_name))
+        url = 'https://api.twitch.tv/helix/games?name={}'.format(
+            quote(game_name))
         time.sleep(3)
         game_data = requests.get(url, headers=TWITCH_HEADER)
         status = game_data.status_code
@@ -36,7 +38,8 @@ class Twitch(object):
 
         total_views = 0
         if len(streams) != 0:
-            total_views = reduce(operator.add, [x['viewer_count'] if x['viewer_count'] != None else 0 for x in streams])
+            total_views = reduce(operator.add, [
+                                 x['viewer_count'] if x['viewer_count'] != None else 0 for x in streams])
             return {
                 'total_views': total_views,
                 'streams': streams
@@ -61,7 +64,9 @@ class Twitch(object):
     def filter_stream_data(self, ndata):
         filtered_data = []
         for data in ndata['data']:
-            keys = ['language', 'game_id', 'started_at', 'type', 'viewer_count']
-            filtered_data.append({ key: data[key] if key in data else None for key in keys })
+            keys = ['language', 'game_id',
+                    'started_at', 'type', 'viewer_count']
+            filtered_data.append(
+                {key: data[key] if key in data else None for key in keys})
 
         return filtered_data[:2]
