@@ -1,6 +1,6 @@
 import unittest
 import requests_mock
-from . import Youtube, Twitch
+from . import Youtube
 
 
 class TestImporter(unittest.TestCase):
@@ -9,8 +9,6 @@ class TestImporter(unittest.TestCase):
 	@requests_mock.Mocker()
 	def setUp(self, request_mock):
 		self.youtube = Youtube.Youtube()
-		self.twitch = Twitch.Twitch()
-
 
 		key = 'AIzaSyDmDXP_gaB7cog4f0slbbdJ3RACsY5WQIw'
 		game_name = 'PUBG'
@@ -137,6 +135,11 @@ class TestImporter(unittest.TestCase):
 		response = self.youtube.get_ids_youtube_game(game_name)
 		self.assertEqual(len(response), 2)
 
+	def test_requisicao_id_Yotube_bad(self):
+		game_name = 'asdaskdh'
+		response = self.youtube.get_ids_youtube_game(game_name)
+		self.assertEqual(len(response), 0)
+
 	@requests_mock.Mocker()
 	def test_requisicao_video_Yotube(self, request_mock):
 
@@ -186,6 +189,22 @@ class TestImporter(unittest.TestCase):
 		game_name = 'PUBG'
 		response = self.youtube.get_youtube_data(game_name)
 		self.assertNotEqual(response, None)
+
+	def test_requisicao_get_Yotube_data_NULL(self):
+
+		game_name = 'sasfds'
+		data = {
+			'name': game_name,
+			'count_videos': None,
+			'count_views': None,
+			'count_likes': None,
+			'count_dislikes': None,
+			'count_favorites': None,
+			'count_comments': None
+		}
+
+		response = self.youtube.get_youtube_data(game_name)
+		self.assertEqual(response, data)
 
 if __name__ == '__main__':
     unittest.main()

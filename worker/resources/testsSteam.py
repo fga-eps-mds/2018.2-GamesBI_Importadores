@@ -1,6 +1,6 @@
 import unittest
 import requests_mock
-from . import Twitch, Steam
+from . import Steam
 from PIL import Image
 
 
@@ -12,7 +12,6 @@ class TestImporter(unittest.TestCase):
     def test_get_steam_data(self, request_mock):
         self.steam = Steam.Steam()
         url = 'http://steamspy.com/api.php?request=all'
-        url2 = 'https://store.steampowered.com/api/appdetails?appids=570'
         data = {
             "570":{
         		"appid":570,
@@ -214,6 +213,35 @@ class TestImporter(unittest.TestCase):
 
         response = self.steam.get_infos_game_steam(game_id)
         self.assertNotEqual(response, None)
+
+    def test_get_infos_game_steam_Bad_Request(self):
+        self.steam = Steam.Steam()
+
+        game_id = 570154
+        data = {
+            'r_average': None,
+            'g_average': None,
+            'b_average': None,
+            'main_image': None,
+            'languages': [],
+            'genres': [],
+            'screenshots': [],
+            'release_date': None
+        }
+
+        response = self.steam.get_infos_game_steam(game_id)
+        self.assertEqual(response, data)
+
+    @requests_mock.Mocker()
+    def test_get_steam_data_bad(self, request_mock):
+        self.steam = Steam.Steam()
+        url = 'http://steamspy.com/api.php?request=all'
+        data = {}
+        datalist = []
+
+        request_mock.get(url, json=data)
+        response = self.steam.get_steam_data()
+        self.assertEqual(response,datalist)
 
 if __name__ == '__main__':
     unittest.main()
