@@ -12,6 +12,12 @@ before_install:
 script: 
   - docker-compose up -d
   - sleep 10
+  - docker-compose run worker coverage run -m unittest resources/testsYotube.py
+  - docker-compose run worker coverage report
+  - mv worker/.coverage .
+
+after_success:
+  - docker-compose run -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN -w /queue worker coveralls
 
 deploy:
   - provider: heroku

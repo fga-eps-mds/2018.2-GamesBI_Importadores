@@ -171,11 +171,11 @@ class TestImporter(unittest.TestCase):
 		request_mock.get(url, json=data_video)
 
 		data = {
-            'count_views': 907581,
-            'count_likes': 4067,
-            'count_dislikes': 1352,
-            'count_favorites': 0,
-            'count_comments': 466
+            'viewCount': 907581,
+            'likeCount': 4067,
+            'dislikeCount': 1352,
+            'favoriteCount': 0,
+            'commentCount': 466
         }
 
 		video_data = self.youtube.get_video_youtube_data(id_video)
