@@ -31,21 +31,10 @@ $ (sudo) docker-compose up -d
 
 # Other commands
 
-If you want to execute some Flask commands inside your docker container, use:
+If you want to execute some commands inside your docker container, use:
 ```bash
 $ (sudo) docker-compose exec import [command]
 ```
 
-These commands can be:
-```bash
-python manage.py test
-python manage.py createapp your-app
-```
-or any other supported by Flask.
-
 # More about the project
-This project aims to offer a competitive BI for games. This includes, game development, content creation for youtube and twitch and whether you should invest in a game if you're a publisher.
-
-A lot of its design ideas came from other sites, for example, [steamspy](steamspy.com). Although we're not only using information from Steam, but also from Youtube and Twitch.
-
-Our belief is that there isn't a cross-platform and helpfull BI tool for games out there. Which is why our main goal is to deliver this very such thing, and also make it acessible for everyone willing to use it.
+For more info, visit the main repository of the project: [Games BI](https://github.com/fga-eps-mds/2018.2-GamesBI)
