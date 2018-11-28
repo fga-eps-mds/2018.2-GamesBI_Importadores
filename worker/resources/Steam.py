@@ -2,6 +2,7 @@ import os
 import requests
 import colorific
 from PIL import Image
+from . import Validador
 
 STEAM_OWNERS_MIN = int(os.environ['STEAM_OWNERS_MIN'])
 STEAM_GAMES_LIMIT = int(os.environ['STEAM_GAMES_LIMIT'])
@@ -33,9 +34,14 @@ class Steam(object):
                 filtered_data.append(
                     {key: game[key] if key in game else None for key in keys})
 
-                additional_information = self.get_infos_game_steam(
-                    filtered_data[count]['appid']
-                )
+                validador = Validador.Validador()
+                if not validador.game_exists(filtered_data[count]['name']):
+                    additional_information = self.get_infos_game_steam(
+                        filtered_data[count]['appid']
+                    )
+                else:
+                    additional_information = self.get_empty_dict_data()
+
                 filtered_data[count].update(additional_information)
                 count += 1
         return filtered_data

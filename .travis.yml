@@ -12,12 +12,18 @@ before_install:
 script: 
   - docker-compose up -d
   - sleep 10
+  - docker-compose run worker coverage run -m unittest resources/testsYotube.py resources/testsTwitch.py resources/testsSteam.py resources/testsImporter.py
+  - docker-compose run worker coverage report
+  - mv worker/.coverage .
+
+after_success:
+  - docker-compose run -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN -w /queue worker coveralls
 
 deploy:
   - provider: heroku
     api_key:
       secure: ${HEROKU_KEY}
-    app: gbi-importadores-staging
+    app: gbi-importadores2-staging
     on:
       repo: fga-eps-mds/2018.2-GamesBI_Importadores
       branch: develop
@@ -25,7 +31,7 @@ deploy:
   - provider: heroku
     api_key:
       secure: ${HEROKU_KEY}
-    app: gbi-importadores-production
+    app: gbi-importadores2-production
     on:
       repo: fga-eps-mds/2018.2-GamesBI_Importadores
       branch: master

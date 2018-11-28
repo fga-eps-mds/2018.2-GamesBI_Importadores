@@ -8,7 +8,7 @@ class Importer():
         array_post = []
         steam = Steam.Steam()
         youtube = Youtube.Youtube()
-        twitch = Twitch.Twich()
+        twitch = Twitch.Twitch()
         print("Inicio de importação dos jogos da steam ...\n")
         array_steam_data = steam.get_steam_data()
         for game_steam in array_steam_data:
@@ -20,7 +20,10 @@ class Importer():
             dictionary_game = self.merge_data(
                 game_steam, game_youtube, game_twitch)
             array_post.append(dictionary_game)
+
+
             print("Jogo {} importado com sucesso!\n".format(game_steam['name']))
+
 
         # requests.post("http://web:8000/api/", json=array_post)
         return array_post
