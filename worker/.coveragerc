@@ -1,0 +1,6 @@
+[run]
+source =
+    resources/
+
+omit =
+    resources/tests*

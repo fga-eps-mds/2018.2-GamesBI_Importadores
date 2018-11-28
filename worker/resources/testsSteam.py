@@ -224,6 +224,7 @@ class TestImporter(unittest.TestCase):
 
         self.assertEqual(response, response_empty)
 
+
     @requests_mock.Mocker()
     def test_get_steam_data_bad(self, request_mock):
         self.steam = Steam.Steam()
