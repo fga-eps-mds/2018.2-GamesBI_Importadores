@@ -218,19 +218,11 @@ class TestImporter(unittest.TestCase):
         self.steam = Steam.Steam()
 
         game_id = 570154
-        data = {
-            'r_average': None,
-            'g_average': None,
-            'b_average': None,
-            'main_image': None,
-            'languages': [],
-            'genres': [],
-            'screenshots': [],
-            'release_date': None
-        }
 
         response = self.steam.get_infos_game_steam(game_id)
-        self.assertEqual(response, data)
+        response_empty = self.steam.get_empty_dict_data()
+
+        self.assertEqual(response, response_empty)
 
     @requests_mock.Mocker()
     def test_get_steam_data_bad(self, request_mock):
@@ -242,6 +234,68 @@ class TestImporter(unittest.TestCase):
         request_mock.get(url, json=data)
         response = self.steam.get_steam_data()
         self.assertEqual(response,datalist)
+
+    def test_get_release_date(self):
+        self.steam = Steam.Steam()
+
+        data = {}
+        response = self.steam.get_release_date(data)
+
+        self.assertEqual(response, None)
+
+    def test_get_languages(self):
+        self.steam = Steam.Steam()
+
+        dict_data = {
+            "supported_languages":"B\u00falgaro, Tcheco, Dinamarqu\u00eas, Holand\u00eas, Ingl\u00eas<strong>*</strong>, Finland\u00eas, Franc\u00eas, Alem\u00e3o, Grego, H\u00fangaro, Italiano, Japon\u00eas, Coreano<strong>*</strong>, Noruegu\u00eas, Polon\u00eas, Portugu\u00eas, Portugu\u00eas (Brasil), Romeno, Russo, Chin\u00eas simplificado<strong>*</strong>, Espanhol (Espanha), Sueco, Tailand\u00eas, Chin\u00eas tradicional, Turco, Ucraniano<br><strong>*</strong>idiomas com suporte total de \u00e1udio"
+        }
+
+        response = self.steam.get_languages(dict_data['supported_languages'])
+
+        self.assertNotEqual(len(response), 0)
+
+    def test_get_genres_empty(self):
+        self.steam = Steam.Steam()
+
+        data = {
+            "genres":[
+
+            ]
+        }
+        response = self.steam.get_genres(data)
+
+        self.assertEqual(len(response), 0)
+
+
+    def test_get_screenshots(self):
+        self.steam = Steam.Steam()
+
+        data = {
+            "screenshots":[
+                {
+                    "id":0,
+                    "path_thumbnail":"https://steamcdn-a.akamaihd.net/steam/apps/570/ss_86d675fdc73ba10462abb8f5ece7791c5047072c.600x338.jpg?t=1541701921",
+                    "path_full":"https://steamcdn-a.akamaihd.net/steam/apps/570/ss_86d675fdc73ba10462abb8f5ece7791c5047072c.1920x1080.jpg?t=1541701921"
+                }
+            ]
+        }
+        response = self.steam.get_screenshots(data)
+
+        self.assertNotEqual(len(response), 0)
+
+
+    def test_get_screenshots_2(self):
+        self.steam = Steam.Steam()
+
+        data = {
+            "screenshots":[
+                {
+                }
+            ]
+        }
+        response = self.steam.get_screenshots(data)
+
+        self.assertNotEqual(len(response), 0)
 
 if __name__ == '__main__':
     unittest.main()
