@@ -1,64 +1,200 @@
 import unittest
 import requests_mock
-from . import Steam
+from . import Steam, Youtube, Twitch, Importer
 from PIL import Image
 
 
 class TestImporter(unittest.TestCase):
 
-
-    '''
     @requests_mock.Mocker()
-    def test_get_steam_data(self, request_mock):
+    def setUp(self, request_mock):
+        self.youtube = Youtube.Youtube()
+        self.twitch = Twitch.Twitch()
         self.steam = Steam.Steam()
-        url = 'http://steamspy.com/api.php?request=all'
-        data = {
-            "570":{
-        		"appid":570,
-        		"name":"Dota 2",
-        		"developer":"Valve",
-        		"publisher":"Valve",
-        		"score_rank":66,
-        		"positive":834869,
-        		"negative":133650,
-        		"userscore":86,
-        		"owners":"100,000,000 .. 200,000,000",
-        		"average_forever":27248,
-        		"average_2weeks":1588,
-        		"median_forever":450,
-        		"median_2weeks":861,
-        		"price":"0",
-        		"initialprice":"0",
-        		"discount":"0"
+
+        key = 'AIzaSyDmDXP_gaB7cog4f0slbbdJ3RACsY5WQIw'
+        game_name = 'PUBG'
+        YOUTUBE_VIDEOS_LIMIT = 2
+        url_youtube_id = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults={}&q={}GAMEPLAY&key={}'.format(
+        YOUTUBE_VIDEOS_LIMIT,
+        game_name,
+        key,
+        )
+
+
+        data_youtube_id = {
+         "kind": "youtube#searchListResponse",
+         "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/bLIY-CLkCHsD4COq-IahYya7RqU\"",
+         "nextPageToken": "CAIQAA",
+         "regionCode": "BR",
+         "pageInfo": {
+          "totalResults": 687169,
+          "resultsPerPage": 2
+         },
+         "items": [
+          {
+           "kind": "youtube#searchResult",
+           "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/FPBk8_z5Bk7Bt4lYzxqVCqV_X14\"",
+           "id": {
+            "kind": "youtube#video",
+            "videoId": "sctOYN2pMs4"
+           },
+           "snippet": {
+            "publishedAt": "2017-12-23T23:00:03.000Z",
+            "channelId": "UCIw5rbXUrtk31t20Ap5817w",
+            "title": "PlayerUnknown's Battlegrounds (PUBG) Gameplay (PC HD) [1080p60FPS]",
+            "description": "PlayerUnknown's Battlegrounds (PUBG) Gameplay (PC HD) [1080p60FPS] Steam Page ...",
+            "thumbnails": {
+             "default": {
+              "url": "https://i.ytimg.com/vi/sctOYN2pMs4/default.jpg",
+              "width": 120,
+              "height": 90
+             },
+             "medium": {
+              "url": "https://i.ytimg.com/vi/sctOYN2pMs4/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+             },
+             "high": {
+              "url": "https://i.ytimg.com/vi/sctOYN2pMs4/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+             }
             },
-        	"578080":{
-        		"appid":578080,
-        		"name":"PLAYERUNKNOWN'S BATTLEGROUNDS",
-        		"developer":"PUBG Corporation",
-        		"publisher":"PUBG Corporation",
-        		"score_rank":11,
-                "positive":467955,
-        		"negative":454875,
-        		"userscore":49,
-        		"owners":"50,000,000 .. 100,000,000",
-        		"average_forever":19985,
-        		"average_2weeks":701,
-        		"median_forever":10766,
-        		"median_2weeks":232,
-        		"price":"2999",
-        		"initialprice":"2999",
-        		"discount":"0"
-        	}
+            "channelTitle": "Throneful",
+            "liveBroadcastContent": "none"
+           }
+          },
+          {
+           "kind": "youtube#searchResult",
+           "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/tcJh9o972j5pkb_sUa2AK9bWQ_c\"",
+           "id": {
+            "kind": "youtube#video",
+            "videoId": "y5i-NqrNvaM"
+           },
+           "snippet": {
+            "publishedAt": "2018-06-27T21:16:12.000Z",
+            "channelId": "UCN-v-Xn9S7oYk0X2v1jx1Qg",
+            "title": "SOLO SAVAGE - PUBG Gameplay SOLO FPP New Map",
+            "description": "Finally played some solos on the new PUBG update and new map (Sanhok, aka \"Savage\")! More gameplays coming soon to my second channel: ...",
+            "thumbnails": {
+             "default": {
+              "url": "https://i.ytimg.com/vi/y5i-NqrNvaM/default.jpg",
+              "width": 120,
+              "height": 90
+             },
+             "medium": {
+              "url": "https://i.ytimg.com/vi/y5i-NqrNvaM/mqdefault.jpg",
+              "width": 320,
+              "height": 180
+             },
+             "high": {
+              "url": "https://i.ytimg.com/vi/y5i-NqrNvaM/hqdefault.jpg",
+              "width": 480,
+              "height": 360
+             }
+            },
+            "channelTitle": "StoneMountain64",
+            "liveBroadcastContent": "none"
+           }
+          }
+         ]
         }
-        request_mock.get(url, json=data)
 
-        response = self.steam.get_steam_data()
-        self.assertNotEqual(len(response), 0)
-    '''
+        request_mock.get(url_youtube_id, json=data_youtube_id)
 
-    def test_get_infos_game_steam(self):
-        self.steam = Steam.Steam()
-        '''
+        id_video = "y5i-NqrNvaM"
+        url_video = 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id={}&key={}'.format(id_video, key)
+
+        data_video = {
+            "kind": "youtube#videoListResponse",
+            "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/lKC5Xzvj3cHi0u0u2F4cBe9Irzs\"",
+            "pageInfo": {
+            "totalResults": 1,
+            "resultsPerPage": 1
+            },
+            "items": [
+                {
+                    "kind": "youtube#video",
+                    "etag": "\"XI7nbFXulYBIpL0ayR_gDh3eu1k/oKzDIVkNP8fDr7WBj3_BQ1NzeHs\"",
+                    "id": "sctOYN2pMs4",
+                    "statistics": {
+                        "viewCount": "944599",
+                        "likeCount": "4485",
+                        "dislikeCount": "1423",
+                        "favoriteCount": "0",
+                        "commentCount": "476"
+                    }
+                }
+            ]
+        }
+
+        request_mock.get(url_video, json=data_video)
+
+
+
+        game_name = 'PUBG'
+        url_twitch = 'https://api.twitch.tv/helix/games?name={}'.format(game_name)
+        data_url = {
+            "data": [
+                {
+                    "id": "493057",
+                    "name": "PLAYERUNKNOWN'S BATTLEGROUNDS",
+                    "box_art_url": "https://static-cdn.jtvnw.net/ttv-boxart/PLAYERUNKNOWN%27S%20BATTLEGROUNDS-{width}x{height}.jpg"
+                }
+            ]
+        }
+
+        request_mock.get(url_twitch, json=data_url)
+
+        game_id = '493057'
+        url_id = 'https://api.twitch.tv/helix/streams?game_id={}'.format(game_id)
+
+        data_id = {
+            "data": [
+                {
+                    "id": "31432712304",
+                    "user_id": "22159551",
+                    "user_name": "Lumi",
+                    "game_id": "493057",
+                    "community_ids": [
+                        "01d41280-9332-4f54-b77a-a20f577beade",
+                        "434e0896-4c27-4c87-9275-cbfba2b323f5",
+                        "b0e7cf13-4131-4f1b-9810-d88087de024b"
+                    ],
+                    "type": "live",
+                    "title": ":)",
+                    "viewer_count": 1032,
+                    "started_at": "2018-11-27T21:53:46Z",
+                    "language": "en",
+                    "thumbnail_url": "https://static-cdn.jtvnw.net/previews-ttv/live_user_lumi-{width}x{height}.jpg",
+                    "tag_ids": [
+                        "6ea6bca4-4712-4ab9-a906-e3336a9d8039",
+                        "ab340187-1794-4630-9eab-e3b75cc86381"
+                    ]
+                },
+                {
+                    "id": "31426144768",
+                    "user_id": "121652526",
+                    "user_name": "LittleBigWhale",
+                    "game_id": "493057",
+                    "community_ids": [
+                        "229f348c-3bdc-45af-8e66-3e7562f7c2a5"
+                    ],
+                    "type": "live",
+                    "title": "Duo ft. Gius",
+                    "viewer_count": 602,
+                    "started_at": "2018-11-27T14:06:34Z",
+                    "language": "fr",
+                    "thumbnail_url": "https://static-cdn.jtvnw.net/previews-ttv/live_user_littlebigwhale-{width}x{height}.jpg",
+                    "tag_ids": [
+                        "6f655045-9989-4ef7-8f85-1edcec42d648"
+                    ]
+                }
+            ]
+        }
+        request_mock.get(url_id, json=data_id)
+
         url2 = 'https://store.steampowered.com/api/appdetails?appids=570'
 
         data2 = {
@@ -203,100 +339,19 @@ class TestImporter(unittest.TestCase):
         }
         request_mock.get(url2, json=data2)
 
-        url3 = 'https://steamcdn-a.akamaihd.net/steam/apps/570/ss_86d675fdc73ba10462abb8f5ece7791c5047072c.600x338.jpg?t=1541701921'
+    def test_get_importadores(self):
+        self.importer = Importer.Importer()
 
-        im = Image.open('imgTest.jpg')
-        request_mock.get(url3, json=im)
-
-        '''
-        game_id = 570
-
-        response = self.steam.get_infos_game_steam(game_id)
+        response = self.importer.get()
         self.assertNotEqual(response, None)
 
-    def test_get_infos_game_steam_Bad_Request(self):
-        self.steam = Steam.Steam()
-
-        game_id = 570154
-
-        response = self.steam.get_infos_game_steam(game_id)
-        response_empty = self.steam.get_empty_dict_data()
-
-        self.assertEqual(response, response_empty)
-
-
     @requests_mock.Mocker()
-    def test_get_steam_data_bad(self, request_mock):
-        self.steam = Steam.Steam()
+    def test_get_data_bad(self, request_mock):
+        self.importer = Importer.Importer()
         url = 'http://steamspy.com/api.php?request=all'
         data = {}
         datalist = []
 
         request_mock.get(url, json=data)
-        response = self.steam.get_steam_data()
-        self.assertEqual(response,datalist)
-
-    def test_get_release_date(self):
-        self.steam = Steam.Steam()
-
-        data = {}
-        response = self.steam.get_release_date(data)
-
-        self.assertEqual(response, None)
-
-    def test_get_languages(self):
-        self.steam = Steam.Steam()
-
-        dict_data = {
-            "supported_languages":"B\u00falgaro, Tcheco, Dinamarqu\u00eas, Holand\u00eas, Ingl\u00eas<strong>*</strong>, Finland\u00eas, Franc\u00eas, Alem\u00e3o, Grego, H\u00fangaro, Italiano, Japon\u00eas, Coreano<strong>*</strong>, Noruegu\u00eas, Polon\u00eas, Portugu\u00eas, Portugu\u00eas (Brasil), Romeno, Russo, Chin\u00eas simplificado<strong>*</strong>, Espanhol (Espanha), Sueco, Tailand\u00eas, Chin\u00eas tradicional, Turco, Ucraniano<br><strong>*</strong>idiomas com suporte total de \u00e1udio"
-        }
-
-        response = self.steam.get_languages(dict_data['supported_languages'])
-
-        self.assertNotEqual(len(response), 0)
-
-    def test_get_genres_empty(self):
-        self.steam = Steam.Steam()
-
-        data = {
-            "genres":[
-
-            ]
-        }
-        response = self.steam.get_genres(data)
-
-        self.assertEqual(len(response), 0)
-
-
-    def test_get_screenshots(self):
-        self.steam = Steam.Steam()
-
-        data = {
-            "screenshots":[
-                {
-                    "id":0,
-                    "path_thumbnail":"https://steamcdn-a.akamaihd.net/steam/apps/570/ss_86d675fdc73ba10462abb8f5ece7791c5047072c.600x338.jpg?t=1541701921",
-                    "path_full":"https://steamcdn-a.akamaihd.net/steam/apps/570/ss_86d675fdc73ba10462abb8f5ece7791c5047072c.1920x1080.jpg?t=1541701921"
-                }
-            ]
-        }
-        response = self.steam.get_screenshots(data)
-
-        self.assertNotEqual(len(response), 0)
-
-
-    def test_get_screenshots_2(self):
-        self.steam = Steam.Steam()
-
-        data = {
-            "screenshots":[
-                {
-                }
-            ]
-        }
-        response = self.steam.get_screenshots(data)
-
-        self.assertNotEqual(len(response), 0)
-
-if __name__ == '__main__':
-    unittest.main()
+        response = self.importer.get()
+        self.assertEqual(len(response),0)

@@ -8,7 +8,7 @@ class Importer():
         array_post = []
         steam = Steam.Steam()
         youtube = Youtube.Youtube()
-        twitch = Twitch.Twich()
+        twitch = Twitch.Twitch()
         print("Inicio de importação dos jogos da steam ...\n")
         array_steam_data = steam.get_steam_data()
         for game_steam in array_steam_data:
