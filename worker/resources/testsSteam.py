@@ -219,17 +219,18 @@ class TestImporter(unittest.TestCase):
 
         game_id = 570154
         data = {
-            'r_average': None,
-            'g_average': None,
-            'b_average': None,
-            'main_image': None,
-            'languages': [],
+            'r': None,
+            'g': None,
+            'b': None,
+            'header_image': None,
+            'supported_languages': [],
             'genres': [],
             'screenshots': [],
             'release_date': None
         }
 
         response = self.steam.get_infos_game_steam(game_id)
+        print(response)
         self.assertEqual(response, data)
 
     @requests_mock.Mocker()
